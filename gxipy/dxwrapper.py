@@ -25,6 +25,21 @@ else:
     except OSError:
         print('Cannot find DxImageProc.dll.')
 
+def string_encoding(string):
+    """
+    :breif      Python3.X: String encoded as bytes
+    :param      string
+    :return:
+    """
+    if sys.version_info.major == 3:
+        string = string.encode()
+    return string
+
+# image format handle
+class DxImageFormatConvertHandle:
+
+    def __init__(self):
+        pass
 
 # status  definition
 class DxStatus:
@@ -38,7 +53,6 @@ class DxStatus:
   
     def __init__(self):
         pass
-
 
 # Bayer layout
 class DxPixelColorFilter:
@@ -63,6 +77,13 @@ class DxActualBits:
     def __init__(self):
         pass
 
+# image mirror method
+class DxImageMirrorMethod:
+    HORIZONTAL_MIRROR = 0
+    VERTICAL_MIRROR = 1
+
+    def __init__(self):
+        pass
 
 # mono8 image process structure
 class MonoImgProcess(Structure):
@@ -134,6 +155,20 @@ class ColorTransformFactor(Structure):
     def __str__(self):
         return "ColorTransformFactor\n%s" % "\n".join("%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_)
 
+# Field correction process structure
+class StaticDefectCorrection(Structure):
+    _fields_ = [
+        ('width',                       c_uint32),      # image width
+        ('height',                      c_uint32),      # image height
+        ('OffsetX',                     c_uint32),      # image off x
+        ('OffSetY',                     c_uint32),      # image off y
+        ('WidthMax',                    c_uint32),      # image width max
+        ('bayer_type',                  c_uint),        # Bayer Type
+        ('actual_bits',                 c_uint),        # image actual bits
+    ]
+
+    def __str__(self):
+        return "FieldCorrectionProcess\n%s" % "\n".join("%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_)
 
 if hasattr(dll, 'DxGetLut'):
     def dx_get_lut(contrast_param, gamma, lightness):
@@ -484,7 +519,6 @@ if hasattr(dll, "DxImageImprovment"):
                                        color_correction_param_c, contrast_lut, gamma_lut)
         return status
 
-
 if hasattr(dll, "DxImageImprovmentEx"):
     def dx_image_improvement_ex(input_address, output_address, width, height,
                                 color_correction_param, contrast_lut, gamma_lut, channel_order):
@@ -728,8 +762,6 @@ if hasattr(dll, "DxImageMirror"):
 
         return status
 
-
-'''
 if hasattr(dll, "DxRaw8ImgProcess"):
     def dx_raw8_image_process(input_address, output_address, width, height, color_img_process_param):
         """
@@ -818,8 +850,6 @@ if hasattr(dll, "DxMono8ImgProcess"):
                                        height_c, byref(mono_img_process_param_c))
 
         return status
-'''
-
 
 if hasattr(dll, 'DxGetFFCCoefficients'):
     def dx_get_ffc_coefficients(bright_img, dark_img, actual_bits, bayer_type, width, height, target_value):
@@ -881,7 +911,7 @@ if hasattr(dll, "DxFlatFieldCorrection"):
         :param      actual_bits:            image actual bits
         :param      width:                  image width
         :param      height:                 image height
-        :param      ffc_coefficients:       flat field correction coefficients Buffer
+        :param      ffc_coefficients:       flat field correction coefficients data array
         :return:    status:                 State return value, See detail in DxStatus
         """
         input_address_p = c_void_p()
@@ -900,11 +930,545 @@ if hasattr(dll, "DxFlatFieldCorrection"):
         actual_bits_c.value = actual_bits
 
         ffc_coefficients_len_c = c_int()
-        ffc_coefficients_len_c.value = ffc_coefficients.get_length()
+        ffc_coefficients_len_c.value = len(ffc_coefficients)
 
         status = dll.DxFlatFieldCorrection(input_address_p, output_address_p, actual_bits_c, width_c, height_c,
-                                           byref(ffc_coefficients.get_ctype_array()), byref(ffc_coefficients_len_c))
+                                           byref(ffc_coefficients), byref(ffc_coefficients_len_c))
 
         return status
 
+if hasattr(dll, "DxRaw12PackedToRaw16"):
+    def dx_raw12_packed_to_raw16(input_address, output_address, width, height):
+        """
+        :brief  Convert Raw12Packed to Raw16
+        :param      input_address:          input buffer address, buff size = width * height
+        :param      output_address:         output buffer address, buff size = width * height
+        :param      width:                  image width
+        :param      height:                 image height
+        :return:    status:                 State return value, See detail in DxStatus
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
 
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        status = dll.DxRaw12PackedToRaw16(input_address_p, output_address_p, width_c, height_c)
+
+        return status
+
+if hasattr(dll, "DxRaw10PackedToRaw16"):
+    def dx_raw10_packed_to_raw16(input_address, output_address, width, height):
+        """
+        :brief  Convert Raw10Packed to Raw16
+        :param      input_address:          input buffer address, buff size = width * height
+        :param      output_address:         output buffer address, buff size = width * height
+        :param      width:                  image width
+        :param      height:                 image height
+        :return:    status:                 State return value, See detail in DxStatus
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        status = dll.DxRaw10PackedToRaw16(input_address_p, output_address_p, width_c, height_c)
+
+        return status
+
+if hasattr(dll, "DxRGB48toRGB24"):
+    def dx_rgb48_to_rgb24(input_address, output_address, width, height, valid_bit):
+        """
+        :brief  Convert RGB48 to RGB24
+        :param      input_address:          input buffer address, buff size = width * height
+        :param      output_address:         output buffer address, buff size = width * height
+        :param      width:                  image width
+        :param      height:                 image height
+        :param      valid_bit:             image valid bit
+        :return:    status:                 State return value, See detail in DxStatus
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        valid_bit_c = c_uint()
+        valid_bit_c.value = valid_bit
+
+        status = dll.DxRGB48toRGB24(input_address_p, output_address_p, width_c, height_c, valid_bit_c)
+
+        return status
+
+if hasattr(dll, 'DxRaw16toRGB48'):
+    def dx_raw16_to_rgb48(input_address, output_address, width, height, actual_bits, convert_type, bayer_type, flip):
+        """
+        :brief  Convert Raw16 to RGB48
+        :param input_address:      The input raw image buff address, buff size = width * height
+        :param output_address:     The output rgb image buff address, buff size = width * height * 3
+        :param width:              Image width
+        :param height:             Image height
+        :param  actual_bits:       image actual bits
+        :param convert_type:       Bayer convert type, See detail in DxBayerConvertType
+        :param bayer_type:         pixel color filter, See detail in DxPixelColorFilter
+        :param flip:               Output image flip flag
+                                   True: turn the image upside down
+                                   False: do not flip
+        :return: status            State return value, See detail in DxStatus
+                 data_array        Array of output images, buff size = width * height * 3
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        actual_bits_c = c_uint()
+        actual_bits_c.value = actual_bits
+
+        convert_type_c = c_uint()
+        convert_type_c.value = convert_type
+
+        bayer_type_c = c_uint()
+        bayer_type_c.value = bayer_type
+
+        flip_c = c_bool()
+        flip_c.value = flip
+
+        status = dll.DxRaw16toRGB48(input_address_p, output_address_p,
+                                    width_c, height_c, actual_bits_c, convert_type_c, bayer_type_c, flip_c)
+        return status
+
+if hasattr(dll, 'DxRaw8toARGB32'):
+    def dx_raw8_to_rgb32(input_address, output_address, width, height, stride, convert_type, bayer_type, flip, alpha):
+        """
+        :brief  Convert Raw8 to ARGB32
+        :param input_address:      The input raw image buff address, buff size = width * height
+        :param output_address:     The output rgb image buff address, buff size = width * height * 3
+        :param width:              Image width
+        :param height:             Image height
+        :param  stride:            Android surface stride
+        :param convert_type:       Bayer convert type, See detail in DxBayerConvertType
+        :param bayer_type:         pixel color filter, See detail in DxPixelColorFilter
+        :param flip:               Output image flip flag
+                                   True: turn the image upside down
+                                   False: do not flip
+        :param  alpha:            value of channel Alpha
+        :return: status            State return value, See detail in DxStatus
+                 data_array        Array of output images, buff size = width * height * 3
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        stride_c = c_uint32()
+        stride_c.value = stride
+
+        convert_type_c = c_uint()
+        convert_type_c.value = convert_type
+
+        bayer_type_c = c_uint()
+        bayer_type_c.value = bayer_type
+
+        flip_c = c_bool()
+        flip_c.value = flip
+
+        alpha_c = c_uint32()
+        alpha_c.value = alpha
+
+        status = dll.DxRaw8toARGB32(input_address_p, output_address_p,
+                                    width_c, height_c, stride_c, convert_type_c, bayer_type_c, flip_c, alpha_c)
+        return status
+
+if hasattr(dll, 'DxStaticDefectCorrection'):
+    def dx_static_defect_correction(input_address, output_address, defect_correction, defect_pos_buffer_address,
+                                    defect_pos_buffer_size):
+        """
+        :brief Image defect pixel correction
+        :param input_address:                      The input raw image buff address, buff size = width * height
+        :param output_address:                     The output rgb image buff address, buff size = width * height * 3
+        :param defect_correction:                  Image parameter used to do defect correction
+        :param defect_pos_buffer_address:          Defect Pixel position file buffer
+        :param  defect_pos_buffer_size:            Defect Pixel position file buffer size
+
+        :return: status                            State return value, See detail in DxStatus
+                 data_array                        Array of output images, buff size = width * height * 3
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        defect_correction_c = defect_correction
+
+        defect_pos_buffer_address_p = c_void_p()
+        defect_pos_buffer_address_p.value = defect_pos_buffer_address
+
+        defect_pos_buffer_size_c = c_uint32()
+        defect_pos_buffer_size_c.value = defect_pos_buffer_size
+
+        status = dll.DxStaticDefectCorrection(input_address_p, output_address_p,
+                                              defect_correction_c, defect_pos_buffer_address_p,
+                                              defect_pos_buffer_size_c)
+        return status
+
+if hasattr(dll, 'DxCalcCameraLutBuffer'):
+    def dx_calc_camera_lut_buffer(contrast_param, gamma, light_ness, lut_address,
+                                  lut_length_address):
+        """
+        :brief calculating lookup table of camera
+        :param contrast_param:                      contrast param,range(-50~100)
+        :param gamma:                               gamma param,range(0.1~10)
+        :param light_ness:                          lightness param,range(-150~150)
+        :param lut_address:                         lookup table
+        :param  lut_length_address:                 lookup table length(unit:byte)
+
+        Lookup table length should be obtained through the interface GXGetBufferLength.
+        """
+        contrast_param_c = c_int32()
+        contrast_param_c.value = contrast_param
+
+        gamma_c = c_double()
+        gamma_c.value = gamma
+
+        lightness_c = c_int32()
+        lightness_c.value = light_ness
+
+        lut_address_c = c_void_p()
+        lut_address_c.value = lut_address
+
+        status = dll.DxCalcCameraLutBuffer(contrast_param_c, gamma_c,
+                                           lightness_c, lut_address_c,
+                                           lut_length_address)
+        return status
+
+if hasattr(dll, 'DxReadLutFile'):
+    def dx_read_lut_file(lut_file_path, lut_address, lut_length_address):
+        """
+        :brief read lut file
+        :param lut_file_path:                        Lut file path. Lut file(xxx.lut) can be obtained from Lut
+                                 Create Tool Plugin,which can be get by select Plugin->Lut
+                                 Create Tool Plugin from the menu bar in GalaxyView.
+        :param lut_address:                          Lookup table. Users need to apply for memory in advance.The
+                                 memory size is also lookup table length(nLutLength),should be
+                                 obtained through the interface GXGetBufferLength,
+                                 e.g. GXGetBufferLength(m_hDevice, GX_BUFFER_LUT_VALUEALL,&nLutLength),
+        :param lut_length_address:                   Lookup table length(unit:byte),which should be obtained through
+                                 the interface GXGetBufferLength, e.g.
+                                 GXGetBufferLength(m_hDevice, GX_BUFFER_LUT_VALUEALL,&nLutLength),
+        :return: status                            State return value, See detail in DxStatus
+                 data_array                        Array of output images, buff size = width * height * 3
+        """
+
+        lut_address_p = c_void_p()
+        lut_address_p.value = lut_address
+
+        status = dll.DxReadLutFile(lut_file_path, lut_address_p,
+                                   lut_length_address)
+        return status
+
+if hasattr(dll, 'DxImageFormatConvertCreate'):
+    def dx_image_format_convert_create():
+        """
+        :brief Create handle for Image Format Convert
+        :param  handle          [in] Image Format convert handle
+        """
+        handle = c_void_p()
+        status = dll.DxImageFormatConvertCreate(pointer(handle))
+        return status, handle
+
+if hasattr(dll, 'DxImageFormatConvertDestroy'):
+    def dx_image_format_convert_destroy(handle):
+        """
+        :brief Destroy handle for Image Format Convert
+        :param  handle          [in] Image Format convert handle
+        """
+        status = dll.DxImageFormatConvertDestroy(handle)
+        return status
+
+if hasattr(dll, 'DxImageFormatConvert'):
+    def dx_image_format_convert(handle, input_address, input_length, output_address, output_length, fixel_format, width,
+                                height, flip):
+        """
+        :brief Image Format Convert Process
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+
+        fixel_format_c = c_uint()
+        fixel_format_c.value = fixel_format
+
+        flip_c = c_bool()
+        flip_c.value = flip
+
+        status = dll.DxImageFormatConvert(handle, input_address_p, input_length, output_address_p,
+                                          output_length, fixel_format_c, width_c, height_c, flip_c)
+        return status
+
+if hasattr(dll, 'DxImageFormatConvertSetOutputPixelFormat'):
+    def dx_image_format_convert_set_output_pixel_format(handle, pixel_format):
+        """
+        :brief Set Bayer Pixel Format Convert Type
+        :param  handle          [in] Image Format convert handle
+        :param  pixel_format   [in] Pixel Format
+        """
+
+        pixel_format_c = c_uint()
+        pixel_format_c.value = pixel_format
+
+        status = dll.DxImageFormatConvertSetOutputPixelFormat(handle, pixel_format_c)
+        return status
+
+if hasattr(dll, 'DxImageFormatConvertSetAlphaValue'):
+    def dx_image_format_convert_set_alpha_value(handle, alpha_value):
+        """
+        :brief Set Bayer Pixel Format Convert Type
+        :param  handle          [in] Image Format convert handle
+        :param  alpha_value     [in] Alpha channel value(range of 0~255)
+        """
+
+        alpha_value_c = c_uint()
+        alpha_value_c.value = alpha_value
+
+        status = dll.DxImageFormatConvertSetAlphaValue(handle, alpha_value_c)
+        return status
+
+if hasattr(dll, 'DxImageFormatConvertSetInterpolationType'):
+    def dx_image_format_convert_set_interpolation_type(handle, cvt_type):
+        """
+        :brief Set Bayer Pixel Format Convert Type
+        :param  handle          [in] Image Format convert handle
+        :param  cvt_type       [in] Bayer Pixel Format convert RGB type
+        """
+
+        status = dll.DxImageFormatConvertSetInterpolationType(handle, cvt_type)
+        return status
+
+if hasattr(dll, 'DxImageFormatConvertSetValidBits'):
+    def dx_image_format_convert_set_valid_bits(handle, valid_bits):
+        """
+        :brief Set Valid Bits
+        :param  handle          [in] Image Format convert handle
+        :param  valid_bits     [in] Valid Bits value
+        """
+
+        status = dll.DxImageFormatConvertSetValidBits(handle, valid_bits)
+        return status
+
+if hasattr(dll, 'DxImageFormatConvertGetOutputPixelFormat'):
+    def dx_image_format_convert_get_output_pixel_format(handle):
+        """
+        :brief Set Output Pixel type
+        :param  handle          [in] Image Format convert handle
+        :param  pixel_format   [out] Pixel Format
+        """
+
+        pixel_format_c = c_uint()
+
+        status = dll.DxImageFormatConvertGetOutputPixelFormat(handle, byref(pixel_format_c))
+        return status, pixel_format_c.value
+
+if hasattr(dll, 'DxImageFormatConvertGetBufferSizeForConversion'):
+    def dx_image_format_convert_get_buffer_size_for_conversion(handle, pixel_format, width, height):
+        """
+        :brief Set Output Pixel type
+        :param  handle          [in] Image Format convert handle
+        :param  pixel_format    [in]   Pixel Format
+        :param  width           [in]   Image Width
+        :param  height          [in]   Image Height
+        :param  buffer_size_address     [out]  Image buffer size
+        """
+        pixel_format_c = c_uint()
+        pixel_format_c.value = pixel_format
+
+        width_c = c_uint()
+        width_c.value = width
+
+        height_c = c_uint()
+        height_c.value = height
+
+        buffer_size_c = c_int()
+
+        status = dll.DxImageFormatConvertGetBufferSizeForConversion(handle, pixel_format_c, width_c,
+                                                                    height_c, byref(buffer_size_c))
+        return status, buffer_size_c.value
+
+if hasattr(dll, "DxRotate90CW8B"):
+    def dx_rotate_90_cw8b(input_address, output_address, width, height):
+        """
+        :brief  To rotate the 8-bit image clockwise by 90 degrees
+        :param  pInputBuffer  	[in] input buffer
+        :param  pOutputBuffer	[out]output buffer(new buffer)
+        :param  nWidth        	[in] image width
+        :param  nHeight       	[in] image height
+
+        :return emStatus
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        status = dll.DxRotate90CW8B(input_address_p, output_address_p, width_c, height_c)
+
+        return status
+
+if hasattr(dll, "DxRotate90CCW8B"):
+    def dx_rotate_90_ccw8b(input_address, output_address, width, height):
+        """
+        :brief  To rotate the 8-bit image counter by 90 degrees
+        :param  pInputBuffer  	[in] input buffer
+        :param  pOutputBuffer	[out]output buffer(new buffer)
+        :param  nWidth        	[in] image width
+        :param  nHeight       	[in] image height
+
+        :return emStatus
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        status = dll.DxRotate90CCW8B(input_address_p, output_address_p, width_c, height_c)
+
+        return status
+
+if hasattr(dll, "DxRotate90CW16B"):
+    def dx_rotate_90_cw16b(input_address, output_address, width, height):
+        """
+        :brief  To rotate the 16-bit image clockwise by 90 degrees
+        :param  pInputBuffer  	[in] input buffer
+        :param  pOutputBuffer	[out]output buffer(new buffer)
+        :param  nWidth        	[in] image width
+        :param  nHeight       	[in] image height
+
+        :return emStatus
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        status = dll.DxRotate90CW16B(input_address_p, output_address_p, width_c, height_c)
+
+        return status
+
+if hasattr(dll, "DxRotate90CCW16B"):
+    def dx_rotate_90_ccw16b(input_address, output_address, width, height):
+        """
+        :brief  To rotate the 16-bit image counter by 90 degrees
+        :param  pInputBuffer  	[in] input buffer
+        :param  pOutputBuffer	[out]output buffer(new buffer)
+        :param  nWidth        	[in] image width
+        :param  nHeight       	[in] image height
+
+        :return emStatus
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        status = dll.DxRotate90CCW16B(input_address_p, output_address_p, width_c, height_c)
+
+        return status
+
+if hasattr(dll, "DxImageMirror16B"):
+    def dx_image_mirror_16b(input_address, output_address, width, height, mirro_mode):
+        """
+        :brief  image mirror(Raw16 or 16bit image)
+        :param  pInputBuff   	[in] input buffer
+        :param  pOutputBuf      [out]output buffer
+        :param  nWidth          [in] image width
+        :param  nHeight         [in] image height
+        :param  emMirrorMode    [in] mirror mode
+
+        :return emStatus
+        """
+        input_address_p = c_void_p()
+        input_address_p.value = input_address
+
+        output_address_p = c_void_p()
+        output_address_p.value = output_address
+
+        width_c = c_uint32()
+        width_c.value = width
+
+        height_c = c_uint32()
+        height_c.value = height
+
+        status = dll.DxImageMirror16B(input_address_p, output_address_p, width_c, height_c, mirro_mode)
+
+        return status
