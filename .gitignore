@@ -1,4 +1,4 @@
-build/*
-dist/*
-iai_gxipy.egg-info/*
-gxipy/__pycache_/*
+build/
+dist/
+*.egg-info/
+__pycache_/
