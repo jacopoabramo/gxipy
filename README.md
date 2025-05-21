@@ -16,7 +16,7 @@ This package provides Python bindings for the Daheng Imaging Galaxy SDK, allowin
 ## Installation
 
 1. Install the Galaxy SDK for your operating system
-2. Run `pip install gxipy`
+2. Run `pip install iai-gxipy`
 
 ## Documentation
 The documentation is provided by Daheng Imaging and can be found in `C:\Program Files\Daheng Imaging\GalaxySDK\Development\Doc\Python Interface Development User Manual.pdf`
