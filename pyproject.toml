@@ -20,6 +20,11 @@ classifiers = [
 dependencies = [
     "numpy",
 ]
+[project.optional-dependencies]
+dev = [
+    "mypy",
+    "ruff"
+]
 
 [project.urls]
 Homepage = "https://github.com/maximecharriere/gxipy"
