@@ -2,15 +2,11 @@
 # -*- coding:utf-8 -*-
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
-import numpy
-from gxipy.gxwrapper import *
-from gxipy.dxwrapper import *
-from gxipy.gxidef import *
-from gxipy.gxiapi import *
-from gxipy.Exception import *
-import types
+from gxipy.Exception import exception_deal
+from gxipy.gxwrapper import GxStatusList, gx_get_last_error
 
 ERROR_SIZE = 1024
+
 
 class StatusProcessor:
     def __init__(self):
@@ -46,4 +42,3 @@ class StatusProcessor:
             ret, err_code, string = gx_get_last_error(ERROR_SIZE)
             error_message = "%s.%s:%s" % (class_name, function_name, string)
             print(error_message)
-

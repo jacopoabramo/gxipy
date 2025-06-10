@@ -2,19 +2,14 @@
 # -*- coding:utf-8 -*-
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
-
-import numpy
-from gxipy.gxwrapper import *
-from gxipy.dxwrapper import *
-from gxipy.gxidef import *
-from gxipy.ImageProc import *
 import threading
-import types
 
-if sys.version_info.major > 2:
-    INT_TYPE = int
-else:
-    INT_TYPE = (int, long)
+import gxipy.dxwrapper as dx
+
+from .Exception import ParameterTypeError, UnexpectedError
+from .gxidef import DxBayerConvertType, DxValidBit
+from .ImageProc import Buffer, DxColorImgProcess, DxMonoImgProcess
+
 
 class ImageProcessConfig:
     def __init__(self, color_correction_param):
@@ -33,7 +28,7 @@ class ImageProcessConfig:
         self.lightness_factor = 0
         self.saturation_factor = 64
         self.color_correction_param = color_correction_param
-        self.color_transform_factor = ColorTransformFactor()
+        self.color_transform_factor = dx.ColorTransformFactor()
         self.color_transform_factor.fGain00 = 1
         self.color_transform_factor.fGain01 = 0
         self.color_transform_factor.fGain02 = 0
@@ -69,13 +64,12 @@ class ImageProcessConfig:
         self.set_lightness_param(self.lightness_factor)
         self.set_saturation_param(self.saturation_factor)
 
-
     def set_valid_bits(self, valid_bits):
         """
         :brief    Select Get the specified 8-bit valid data bits. This interface is set up for non-8-bit raw data
         :param:   valid_bits: Valid data bits 0 to 7,  refer to DxValidBit
         """
-        if not isinstance(valid_bits, INT_TYPE):
+        if not isinstance(valid_bits, int):
             raise ParameterTypeError("valid_bits param must be int in DxValidBit.")
 
         self.valid_bits = valid_bits
@@ -126,13 +120,16 @@ class ImageProcessConfig:
         :brief     set sharpen param factor
         :param:    param: sharpen param factor (0.1 ~5.0)
         """
-        if not isinstance(param, (INT_TYPE, float)):
+        if not isinstance(param, (int, float)):
             raise ParameterTypeError("param must to be int or float type.")
 
-        if (param >= self.__sharp_factor_min and param <= self.__sharp_factor_max):
+        if param >= self.__sharp_factor_min and param <= self.__sharp_factor_max:
             self.sharp_factor = param
         else:
-            raise UnexpectedError("SharpFactor Range is {%f}~{%f}" %(self.__sharp_factor_min, self.__sharp_factor_max))
+            raise UnexpectedError(
+                "SharpFactor Range is {%f}~{%f}"
+                % (self.__sharp_factor_min, self.__sharp_factor_max)
+            )
 
     def get_sharpen_param(self):
         """
@@ -147,13 +144,16 @@ class ImageProcessConfig:
         :param:   param: contrast param factor (-50, 100)
         """
 
-        if not (isinstance(param, INT_TYPE)):
+        if not (isinstance(param, int)):
             raise ParameterTypeError("param must to be INT type.")
 
-        if (param >= self.__contrast_factor_min and param <= self.__contrast_factor_max):
+        if param >= self.__contrast_factor_min and param <= self.__contrast_factor_max:
             self.contrast_factor = param
         else:
-            raise UnexpectedError("ContrastFactor Range is {%d}~{%d}" %(self.__contrast_factor_min ,self.__contrast_factor_max))
+            raise UnexpectedError(
+                "ContrastFactor Range is {%d}~{%d}"
+                % (self.__contrast_factor_min, self.__contrast_factor_max)
+            )
 
         self.__calc_lut()
         self.__calc_contrast_lut()
@@ -170,13 +170,16 @@ class ImageProcessConfig:
         :brief    set gamma param factor
         :param:   param: gamma param factor (0.1, 10.0)
         """
-        if not (isinstance(param, (INT_TYPE, float))):
+        if not (isinstance(param, (int, float))):
             raise ParameterTypeError("param must to be INT or FLOAT type.")
 
-        if (param >= self.__gamma_factor_min and param <= self.__gamma_factor_max):
+        if param >= self.__gamma_factor_min and param <= self.__gamma_factor_max:
             self.gamma_factor = param
         else:
-            raise UnexpectedError("GammaFactor Range is {%f}~{%f}" %(self.__gamma_factor_min, self.__gamma_factor_max))
+            raise UnexpectedError(
+                "GammaFactor Range is {%f}~{%f}"
+                % (self.__gamma_factor_min, self.__gamma_factor_max)
+            )
 
         self.__calc_lut()
         self.__calc_gamma_lut()
@@ -193,13 +196,19 @@ class ImageProcessConfig:
         :brief    set lightness param factor
         :param:   param: lightness param factor (-150, 150)
         """
-        if not (isinstance(param, INT_TYPE)):
+        if not (isinstance(param, int)):
             raise ParameterTypeError("param must to be INT type.")
 
-        if (param >= self.__lightness_factor_min and param <= self.__lightness_factor_max):
+        if (
+            param >= self.__lightness_factor_min
+            and param <= self.__lightness_factor_max
+        ):
             self.lightness_factor = param
         else:
-            raise UnexpectedError("LightnessFactor Range is {%d}~{%d}" %(self.__lightness_factor_min, self.__lightness_factor_max))
+            raise UnexpectedError(
+                "LightnessFactor Range is {%d}~{%d}"
+                % (self.__lightness_factor_min, self.__lightness_factor_max)
+            )
 
         self.__calc_lut()
 
@@ -232,13 +241,19 @@ class ImageProcessConfig:
         :brief    set saturation param 【not support mono camera】
         :param:   param: saturation param (0, 128)
         """
-        if not (isinstance(param, INT_TYPE)):
+        if not (isinstance(param, int)):
             raise ParameterTypeError("param must to be int type.")
 
-        if (param >= self.__saturation_factor_min and param <= self.__saturation_factor_max):
+        if (
+            param >= self.__saturation_factor_min
+            and param <= self.__saturation_factor_max
+        ):
             self.saturation_factor = param
         else:
-            raise UnexpectedError("LightnessFactor Range is {%d}~{%d}" %(self.__saturation_factor_min, self.__saturation_factor_max))
+            raise UnexpectedError(
+                "LightnessFactor Range is {%d}~{%d}"
+                % (self.__saturation_factor_min, self.__saturation_factor_max)
+            )
 
         if self.is_user_set_ccparam():
             self.__calc_user_set_cc_param()
@@ -258,7 +273,7 @@ class ImageProcessConfig:
         :brief    set convert type 【not support mono camera】
         :param:   param: convert type, refer to DxBayerConvertType
         """
-        if not isinstance(cv_type, INT_TYPE):
+        if not isinstance(cv_type, int):
             raise ParameterTypeError("cc_type param must be int in DxRGBChannelOrder.")
 
         self.convert_type = cv_type
@@ -352,8 +367,10 @@ class ImageProcessConfig:
         :param:   color_transform_factor: color correction parameter, refer to ColorTransformFactor
         """
 
-        if not isinstance(color_transform_factor, ColorTransformFactor):
-            raise ParameterTypeError("color_transform_factor param must be ColorTransformFactor type.")
+        if not isinstance(color_transform_factor, dx.ColorTransformFactor):
+            raise ParameterTypeError(
+                "color_transform_factor param must be ColorTransformFactor type."
+            )
 
         self.color_transform_factor = color_transform_factor
 
@@ -381,7 +398,9 @@ class ImageProcessConfig:
         :return: gamma_lut buffer
         """
         if self.gamma_lut is None:
-            raise UnexpectedError("Gamma Lut is empty. You should first call set_gamma_param to calculate it.")
+            raise UnexpectedError(
+                "Gamma Lut is empty. You should first call set_gamma_param to calculate it."
+            )
         return Buffer(self.gamma_lut)
 
     def get_contrast_lut(self):
@@ -391,21 +410,27 @@ class ImageProcessConfig:
         :return: contrast_lut buffer
         """
         if self.contrast_lut is None:
-            raise UnexpectedError("contrast lut Lut is empty. You should first call set_contrast_param to calculate it.")
+            raise UnexpectedError(
+                "contrast lut Lut is empty. You should first call set_contrast_param to calculate it."
+            )
         return Buffer(self.contrast_lut)
 
     def get_color_image_process(self, color_filter_layout):
         color_img_process_param = DxColorImgProcess()
 
         color_img_process_param.accelerate = self.is_accelerate()
-        color_img_process_param.defective_pixel_correct = self.is_defective_pixel_correct()
+        color_img_process_param.defective_pixel_correct = (
+            self.is_defective_pixel_correct()
+        )
         color_img_process_param.denoise = self.is_denoise()
         color_img_process_param.flip = self.is_convert_flip()
         color_img_process_param.sharpness = self.is_sharpen()
         color_img_process_param.convert_type = self.get_convert_type()
         color_img_process_param.color_filter_layout = color_filter_layout
         color_img_process_param.sharp_factor = self.get_sharpen_param()
-        color_img_process_param.pro_lut, color_img_process_param.pro_lut_length = self.__get_lut()
+        color_img_process_param.pro_lut, color_img_process_param.pro_lut_length = (
+            self.__get_lut()
+        )
         color_img_process_param.cc_param_length = 18
         color_img_process_param.cc_param = self.__get_calc_color_correction_param()
 
@@ -414,10 +439,14 @@ class ImageProcessConfig:
     def get_mono_image_process(self):
         mono_img_process_param = DxMonoImgProcess()
         mono_img_process_param.accelerate = self.is_accelerate()
-        mono_img_process_param.defective_pixel_correct = self.is_defective_pixel_correct()
+        mono_img_process_param.defective_pixel_correct = (
+            self.is_defective_pixel_correct()
+        )
         mono_img_process_param.sharpness = self.is_sharpen()
         mono_img_process_param.sharp_factor = self.get_sharpen_param()
-        mono_img_process_param.pro_lut, mono_img_process_param.pro_lut_length = self.__get_lut()
+        mono_img_process_param.pro_lut, mono_img_process_param.pro_lut_length = (
+            self.__get_lut()
+        )
         return mono_img_process_param
 
     def get_mutex(self):
@@ -441,7 +470,7 @@ class ImageProcessConfig:
         self.gamma_factor = 1.0
         self.lightness_factor = 0
         self.saturation_factor = 64
-        self.color_transform_factor = ColorTransformFactor()
+        self.color_transform_factor = dx.ColorTransformFactor()
         self.color_transform_factor.fGain00 = 1
         self.color_transform_factor.fGain01 = 0
         self.color_transform_factor.fGain02 = 0
@@ -451,8 +480,6 @@ class ImageProcessConfig:
         self.color_transform_factor.fGain20 = 0
         self.color_transform_factor.fGain21 = 0
         self.color_transform_factor.fGain22 = 1
-
-
 
     def __get_calc_color_correction_param(self):
         """
@@ -469,9 +496,14 @@ class ImageProcessConfig:
         :return:    void
         """
         with self.mutex:
-            status, cc_param = dx_calc_cc_param(self.get_color_correction_param(), self.saturation_factor)
-            if status != DxStatus.OK:
-                print("Utility.calc_cc_param: calc correction param failure, Error code:%s" % hex(status).__str__())
+            status, cc_param = dx.dx_calc_cc_param(
+                self.get_color_correction_param(), self.saturation_factor
+            )
+            if status != dx.DxStatus.OK:
+                print(
+                    "Utility.calc_cc_param: calc correction param failure, Error code:%s"
+                    % hex(status).__str__()
+                )
                 return None
 
             self.cc_param_buffer = cc_param
@@ -485,10 +517,14 @@ class ImageProcessConfig:
         :return:    void
         """
         with self.mutex:
-            status, cc_param = dx_calc_user_set_cc_param(self.color_transform_factor, self.saturation_factor)
-            if status != DxStatus.OK:
-                print("Utility.calc_user_set_cc_param: calc correction param failure, "
-                      "Error code:%s" % hex(status).__str__())
+            status, cc_param = dx.dx_calc_user_set_cc_param(
+                self.color_transform_factor, self.saturation_factor
+            )
+            if status != dx.DxStatus.OK:
+                print(
+                    "Utility.calc_user_set_cc_param: calc correction param failure, "
+                    "Error code:%s" % hex(status).__str__()
+                )
                 return None
 
             self.cc_param_buffer = cc_param
@@ -507,9 +543,13 @@ class ImageProcessConfig:
         :return NONE
         """
         with self.mutex:
-            status, self.lut, self.lut_length = dx_get_lut(self.contrast_factor, self.gamma_factor, self.lightness_factor)
-            if status != DxStatus.OK:
-                raise UnexpectedError("dx_get_lut failure, Error code:%s" % hex(status).__str__())
+            status, self.lut, self.lut_length = dx.dx_get_lut(
+                self.contrast_factor, self.gamma_factor, self.lightness_factor
+            )
+            if status != dx.DxStatus.OK:
+                raise UnexpectedError(
+                    "dx_get_lut failure, Error code:%s" % hex(status).__str__()
+                )
 
     def __calc_gamma_lut(self):
         """
@@ -517,9 +557,13 @@ class ImageProcessConfig:
         :return NONE
         """
         with self.mutex:
-            status, self.gamma_lut, self.gamma_lut_length = dx_get_gamma_lut(self.gamma_factor)
-            if status != DxStatus.OK:
-                raise UnexpectedError("dx_get_gamma_lut failure, Error code:%s" % hex(status).__str__())
+            status, self.gamma_lut, self.gamma_lut_length = dx.dx_get_gamma_lut(
+                self.gamma_factor
+            )
+            if status != dx.DxStatus.OK:
+                raise UnexpectedError(
+                    "dx_get_gamma_lut failure, Error code:%s" % hex(status).__str__()
+                )
 
     def __calc_contrast_lut(self):
         """
@@ -527,9 +571,10 @@ class ImageProcessConfig:
         :return NONE
         """
         with self.mutex:
-            status, self.contrast_lut, self.contrast_lut_length = dx_get_contrast_lut(self.contrast_factor)
-            if status != DxStatus.OK:
-                raise UnexpectedError("__calc_contrast_lut failure, Error code:%s" % hex(status).__str__())
-
-
-
+            status, self.contrast_lut, self.contrast_lut_length = (
+                dx.dx_get_contrast_lut(self.contrast_factor)
+            )
+            if status != dx.DxStatus.OK:
+                raise UnexpectedError(
+                    "__calc_contrast_lut failure, Error code:%s" % hex(status).__str__()
+                )

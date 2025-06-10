@@ -3,27 +3,31 @@
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 #
 
-from ctypes import *
-import sys
+import ctypes as ct
 import os
+import sys
 
-if sys.platform == 'linux2' or sys.platform == 'linux':
-    if os.path.exists('/usr/lib/libdximageproc.so') : 
-        filepath = '/usr/lib/libdximageproc.so'
+if sys.platform == "linux2" or sys.platform == "linux":
+    if os.path.exists("/usr/lib/libdximageproc.so"):
+        filepath = "/usr/lib/libdximageproc.so"
     else:
-        filepath = '/usr/lib/libgxiapi.so'
+        filepath = "/usr/lib/libgxiapi.so"
     try:
-        dll = CDLL(filepath)
+        dll = ct.CDLL(filepath)
     except OSError:
-        print('Cannot find libdximageproc.so or libgxiapi.so.')
+        print("Cannot find libdximageproc.so or libgxiapi.so.")
+
 else:
     try:
-        if (sys.version_info.major == 3 and sys.version_info.minor >= 8) or (sys.version_info.major > 3):
-            dll = WinDLL('DxImageProc.dll', winmode=0)
+        if (sys.version_info.major == 3 and sys.version_info.minor >= 8) or (
+            sys.version_info.major > 3
+        ):
+            dll = ct.WinDLL("DxImageProc.dll", winmode=0)
         else:
-            dll = WinDLL('DxImageProc.dll')
+            dll = ct.WinDLL("DxImageProc.dll")
     except OSError:
-        print('Cannot find DxImageProc.dll.')
+        print("Cannot find DxImageProc.dll.")
+
 
 def string_encoding(string):
     """
@@ -35,47 +39,50 @@ def string_encoding(string):
         string = string.encode()
     return string
 
+
 # image format handle
 class DxImageFormatConvertHandle:
-
     def __init__(self):
         pass
+
 
 # status  definition
 class DxStatus:
-    OK = 0                               # Operation is successful
-    PARAMETER_INVALID = -101             # Invalid input parameter
-    PARAMETER_OUT_OF_BOUND = -102        # The input parameter is out of bounds
-    NOT_ENOUGH_SYSTEM_MEMORY = -103      # System out of memory
-    NOT_FIND_DEVICE = -104               # not find device
-    STATUS_NOT_SUPPORTED = -105          # operation is not supported
-    CPU_NOT_SUPPORT_ACCELERATE = -106    # CPU does not support acceleration
-  
+    OK = 0  # Operation is successful
+    PARAMETER_INVALID = -101  # Invalid input parameter
+    PARAMETER_OUT_OF_BOUND = -102  # The input parameter is out of bounds
+    NOT_ENOUGH_SYSTEM_MEMORY = -103  # System out of memory
+    NOT_FIND_DEVICE = -104  # not find device
+    STATUS_NOT_SUPPORTED = -105  # operation is not supported
+    CPU_NOT_SUPPORT_ACCELERATE = -106  # CPU does not support acceleration
+
     def __init__(self):
         pass
+
 
 # Bayer layout
 class DxPixelColorFilter:
-    NONE = 0                                # Isn't bayer format
-    RG = 1                                  # The first row starts with RG
-    GB = 2                                  # The first line starts with GB
-    GR = 3                                  # The first line starts with GR
-    BG = 4                                  # The first line starts with BG
+    NONE = 0  # Isn't bayer format
+    RG = 1  # The first row starts with RG
+    GB = 2  # The first line starts with GB
+    GR = 3  # The first line starts with GR
+    BG = 4  # The first line starts with BG
 
     def __init__(self):
         pass
-            
+
 
 # image actual bits
 class DxActualBits:
-    BITS_8 = 8               # 8bit
-    BITS_10 = 10             # 10bit
-    BITS_12 = 12             # 12bit
-    BITS_14 = 14             # 14bit
-    BITS_16 = 16             # 16bit
+    BITS_8 = 8  # 8bit
+    BITS_10 = 10  # 10bit
+    BITS_12 = 12  # 12bit
+    BITS_14 = 14  # 14bit
+    BITS_16 = 16  # 16bit
 
     def __init__(self):
         pass
+
 
 # image mirror method
 class DxImageMirrorMethod:
@@ -85,92 +92,136 @@ class DxImageMirrorMethod:
     def __init__(self):
         pass
 
+
 # mono8 image process structure
-class MonoImgProcess(Structure):
+class MonoImgProcess(ct.Structure):
     _fields_ = [
-        ('defective_pixel_correct',     c_bool),        # Pixel correct switch
-        ('sharpness',                   c_bool),        # Sharpness switch
-        ('accelerate',                  c_bool),        # Accelerate switch
-        ('sharp_factor',                c_float),       # Sharpen the intensity factor
-        ('pro_lut',                     c_void_p),      # Lookup table
-        ('lut_length',                  c_uint16),      # Lut Buffer length
-        ('array_reserved',              c_ubyte * 32),  # Reserved
+        ("defective_pixel_correct", ct.c_bool),  # Pixel correct switch
+        ("sharpness", ct.c_bool),  # Sharpness switch
+        ("accelerate", ct.c_bool),  # Accelerate switch
+        ("sharp_factor", ct.c_float),  # Sharpen the intensity factor
+        ("pro_lut", ct.c_void_p),  # Lookup table
+        ("lut_length", ct.c_uint16),  # Lut Buffer length
+        ("array_reserved", ct.c_ubyte * 32),  # Reserved
     ]
 
     def __str__(self):
-        return "MonoImgProcess\n%s" % "\n".join("%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_)
+        return "MonoImgProcess\n%s" % "\n".join(
+            "%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_
+        )
 
 
 # Raw8 Image process structure
-class ColorImgProcess(Structure):
+class ColorImgProcess(ct.Structure):
     _fields_ = [
-        ('defective_pixel_correct',     c_bool),        # Pixel correct switch
-        ('denoise',                     c_bool),        # Noise reduction switch
-        ('sharpness',                   c_bool),        # Sharpness switch
-        ('accelerate',                  c_bool),        # Accelerate switch
-        ('arr_cc',                      c_void_p),      # Color processing parameters
-        ('cc_buf_length',               c_uint8),       # Color processing parameters length(sizeof(VxInt16)*9)
-        ('sharp_factor',                c_float),       # Sharpen the intensity factor
-        ('pro_lut',                     c_void_p),      # Lookup table
-        ('lut_length',                  c_uint16),      # The length of the lookup table
-        ('cv_type',                     c_uint),        # Interpolation algorithm
-        ('layout',                      c_uint),        # Bayer format
-        ('flip',                        c_bool),        # Image flip flag
-        ('array_reserved',              c_ubyte * 32),  # Reserved
+        ("defective_pixel_correct", ct.c_bool),  # Pixel correct switch
+        ("denoise", ct.c_bool),  # Noise reduction switch
+        ("sharpness", ct.c_bool),  # Sharpness switch
+        ("accelerate", ct.c_bool),  # Accelerate switch
+        ("arr_cc", ct.c_void_p),  # Color processing parameters
+        (
+            "cc_buf_length",
+            ct.c_uint8,
+        ),  # Color processing parameters length(sizeof(VxInt16)*9)
+        ("sharp_factor", ct.c_float),  # Sharpen the intensity factor
+        ("pro_lut", ct.c_void_p),  # Lookup table
+        ("lut_length", ct.c_uint16),  # The length of the lookup table
+        ("cv_type", ct.c_uint),  # Interpolation algorithm
+        ("layout", ct.c_uint),  # Bayer format
+        ("flip", ct.c_bool),  # Image flip flag
+        ("array_reserved", ct.c_ubyte * 32),  # Reserved
     ]
 
     def __str__(self):
-        return "ColorImgProcess\n%s" % "\n".join("%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_)
+        return "ColorImgProcess\n%s" % "\n".join(
+            "%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_
+        )
 
 
 # Field correction process structure
-class FieldCorrectionProcess(Structure):
+class FieldCorrectionProcess(ct.Structure):
     _fields_ = [
-        ('bright_buf',                  c_void_p),      # Bright image buffer
-        ('dark_buf',                    c_void_p),      # Dark image buffer
-        ('width',                       c_uint32),      # image width
-        ('height',                      c_uint32),      # image height
-        ('actual_bits',                 c_uint),        # image actual bits
-        ('bayer_type',                  c_uint),        # Bayer Type
+        ("bright_buf", ct.c_void_p),  # Bright image buffer
+        ("dark_buf", ct.c_void_p),  # Dark image buffer
+        ("width", ct.c_uint32),  # image width
+        ("height", ct.c_uint32),  # image height
+        ("actual_bits", ct.c_uint),  # image actual bits
+        ("bayer_type", ct.c_uint),  # Bayer Type
     ]
 
     def __str__(self):
-        return "FieldCorrectionProcess\n%s" % "\n".join("%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_)
+        return "FieldCorrectionProcess\n%s" % "\n".join(
+            "%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_
+        )
 
 
 # color transform factor
-class ColorTransformFactor(Structure):
+class ColorTransformFactor(ct.Structure):
     _fields_ = [
-        ('fGain00', c_float),   # red   contribution to the red   pixel (multiplicative factor)
-        ('fGain01', c_float),   # green contribution to the red   pixel (multiplicative factor)
-        ('fGain02', c_float),   # blue  contribution to the red   pixel (multiplicative factor)
-        ('fGain10', c_float),   # red   contribution to the green pixel (multiplicative factor)
-        ('fGain11', c_float),   # green contribution to the green pixel (multiplicative factor)
-        ('fGain12', c_float),   # blue  contribution to the green pixel (multiplicative factor)
-        ('fGain20', c_float),   # red   contribution to the blue  pixel (multiplicative factor)
-        ('fGain21', c_float),   # green contribution to the blue  pixel (multiplicative factor)
-        ('fGain22', c_float),   # blue  contribution to the blue  pixel (multiplicative factor)
+        (
+            "fGain00",
+            ct.c_float,
+        ),  # red   contribution to the red   pixel (multiplicative factor)
+        (
+            "fGain01",
+            ct.c_float,
+        ),  # green contribution to the red   pixel (multiplicative factor)
+        (
+            "fGain02",
+            ct.c_float,
+        ),  # blue  contribution to the red   pixel (multiplicative factor)
+        (
+            "fGain10",
+            ct.c_float,
+        ),  # red   contribution to the green pixel (multiplicative factor)
+        (
+            "fGain11",
+            ct.c_float,
+        ),  # green contribution to the green pixel (multiplicative factor)
+        (
+            "fGain12",
+            ct.c_float,
+        ),  # blue  contribution to the green pixel (multiplicative factor)
+        (
+            "fGain20",
+            ct.c_float,
+        ),  # red   contribution to the blue  pixel (multiplicative factor)
+        (
+            "fGain21",
+            ct.c_float,
+        ),  # green contribution to the blue  pixel (multiplicative factor)
+        (
+            "fGain22",
+            ct.c_float,
+        ),  # blue  contribution to the blue  pixel (multiplicative factor)
     ]
 
     def __str__(self):
-        return "ColorTransformFactor\n%s" % "\n".join("%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_)
+        return "ColorTransformFactor\n%s" % "\n".join(
+            "%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_
+        )
+
 
 # Field correction process structure
-class StaticDefectCorrection(Structure):
+class StaticDefectCorrection(ct.Structure):
     _fields_ = [
-        ('width',                       c_uint32),      # image width
-        ('height',                      c_uint32),      # image height
-        ('OffsetX',                     c_uint32),      # image off x
-        ('OffSetY',                     c_uint32),      # image off y
-        ('WidthMax',                    c_uint32),      # image width max
-        ('bayer_type',                  c_uint),        # Bayer Type
-        ('actual_bits',                 c_uint),        # image actual bits
+        ("width", ct.c_uint32),  # image width
+        ("height", ct.c_uint32),  # image height
+        ("OffsetX", ct.c_uint32),  # image off x
+        ("OffSetY", ct.c_uint32),  # image off y
+        ("WidthMax", ct.c_uint32),  # image width max
+        ("bayer_type", ct.c_uint),  # Bayer Type
+        ("actual_bits", ct.c_uint),  # image actual bits
     ]
 
     def __str__(self):
-        return "FieldCorrectionProcess\n%s" % "\n".join("%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_)
+        return "FieldCorrectionProcess\n%s" % "\n".join(
+            "%s:\t%s" % (n, getattr(self, n[0])) for n in self._fields_
+        )
 
-if hasattr(dll, 'DxGetLut'):
+
+if hasattr(dll, "DxGetLut"):
+
     def dx_get_lut(contrast_param, gamma, lightness):
         """
         :brief calculating lookup table of 8bit image
@@ -181,30 +232,40 @@ if hasattr(dll, 'DxGetLut'):
                  lut            lookup table
                  lut_length     lookup table length(unit:byte)
         """
-        contrast_param_c = c_int32()
+        contrast_param_c = ct.c_int32()
         contrast_param_c.value = contrast_param
 
-        gamma_c = c_double()
+        gamma_c = ct.c_double()
         gamma_c.value = gamma
 
-        lightness_c = c_int32()
+        lightness_c = ct.c_int32()
         lightness_c.value = lightness
 
-        lut_length_c = c_uint16()
+        lut_length_c = ct.c_uint16()
         lut_length_c.value = 0
 
         # Get length of the lookup table
-        dll.DxGetLut(contrast_param_c, gamma_c, lightness_c, None, byref(lut_length_c))
+        dll.DxGetLut(
+            contrast_param_c, gamma_c, lightness_c, None, ct.byref(lut_length_c)
+        )
 
         # Create buff to get LUT data
-        lut_c = (c_uint8 * lut_length_c.value)()
-        status = dll.DxGetLut(contrast_param_c, gamma_c, lightness_c,  byref(lut_c), byref(lut_length_c))
+        lut_c = (ct.c_uint8 * lut_length_c.value)()
+        status = dll.DxGetLut(
+            contrast_param_c,
+            gamma_c,
+            lightness_c,
+            ct.byref(lut_c),
+            ct.byref(lut_length_c),
+        )
 
         return status, lut_c, lut_length_c.value
+
 
 CC_PARAM_ARRAY_LEN = 18
 
 if hasattr(dll, "DxCalcCCParam"):
+
     def dx_calc_cc_param(color_cc_param, saturation):
         """
         :brief  calculating array of image processing color adjustment
@@ -213,25 +274,28 @@ if hasattr(dll, "DxCalcCCParam"):
         :return: status:            State return value, See detail in DxStatus
                  cc_param:          color adjustment calculating array
         """
-        color_cc_param_c = c_int64()
+        color_cc_param_c = ct.c_int64()
         color_cc_param_c.value = color_cc_param
 
-        saturation_c = c_int16()
+        saturation_c = ct.c_int16()
         saturation_c.value = saturation
 
-        length_c = c_uint8()
+        length_c = ct.c_uint8()
         # DxCalcCCParam length = sizeof(int16)*9 = 2 * 9 = 18
         length_c.value = CC_PARAM_ARRAY_LEN
 
         # Create buff to get cc data
-        cc_param_c = (c_int16 * length_c.value)()
+        cc_param_c = (ct.c_int16 * length_c.value)()
 
-        status = dll.DxCalcCCParam(color_cc_param_c, saturation_c, byref(cc_param_c), length_c)
+        status = dll.DxCalcCCParam(
+            color_cc_param_c, saturation_c, ct.byref(cc_param_c), length_c
+        )
 
         return status, cc_param_c
 
 
 if hasattr(dll, "DxCalcUserSetCCParam"):
+
     def dx_calc_user_set_cc_param(color_transform_factor, saturation):
         """
         :brief  calculating array of image processing color adjustment
@@ -252,22 +316,28 @@ if hasattr(dll, "DxCalcUserSetCCParam"):
         color_transform_factor_c.fGain21 = color_transform_factor[7]
         color_transform_factor_c.fGain22 = color_transform_factor[8]
 
-        saturation_c = c_int16()
+        saturation_c = ct.c_int16()
         saturation_c.value = saturation
 
-        length_c = c_uint8()
+        length_c = ct.c_uint8()
         # DxCalcCCParam length = sizeof(int16)*9 = 2 * 9 = 18
         length_c.value = CC_PARAM_ARRAY_LEN
 
         # Create buff to get cc data
-        cc_param_c = (c_int16 * length_c.value)()
+        cc_param_c = (ct.c_int16 * length_c.value)()
 
-        status = dll.DxCalcUserSetCCParam(byref(color_transform_factor_c), saturation_c, byref(cc_param_c), length_c)
+        status = dll.DxCalcUserSetCCParam(
+            ct.byref(color_transform_factor_c),
+            saturation_c,
+            ct.byref(cc_param_c),
+            length_c,
+        )
 
         return status, cc_param_c
 
 
 if hasattr(dll, "DxGetGammatLut"):
+
     def dx_get_gamma_lut(gamma_param):
         """
         :brief  calculating gamma lookup table (RGB24)
@@ -276,19 +346,22 @@ if hasattr(dll, "DxGetGammatLut"):
                 gamma_lut:      gamma lookup table
                 lut_length:     gamma lookup table length(unit:byte)
         """
-        gamma_param_c = c_double()
+        gamma_param_c = ct.c_double()
         gamma_param_c.value = gamma_param
 
-        lut_length_c = c_int()
-        status = dll.DxGetGammatLut(gamma_param_c, None, byref(lut_length_c))
+        lut_length_c = ct.c_int()
+        status = dll.DxGetGammatLut(gamma_param_c, None, ct.byref(lut_length_c))
 
-        gamma_lut = (c_ubyte * lut_length_c.value)()
-        status = dll.DxGetGammatLut(gamma_param_c, byref(gamma_lut), byref(lut_length_c))
+        gamma_lut = (ct.c_ubyte * lut_length_c.value)()
+        status = dll.DxGetGammatLut(
+            gamma_param_c, ct.byref(gamma_lut), ct.byref(lut_length_c)
+        )
 
         return status, gamma_lut, lut_length_c.value
 
 
 if hasattr(dll, "DxGetContrastLut"):
+
     def dx_get_contrast_lut(contrast_param):
         """
         :brief  ccalculating contrast lookup table (RGB24)
@@ -297,20 +370,25 @@ if hasattr(dll, "DxGetContrastLut"):
                  contrast_lut: contrast lookup table
                  lut_length:   contrast lookup table length(unit:byte)
         """
-        contrast_param_c = c_int()
+        contrast_param_c = ct.c_int()
         contrast_param_c.value = contrast_param
 
-        lut_length_c = c_int()
-        status = dll.DxGetContrastLut(contrast_param_c, None, byref(lut_length_c))
+        lut_length_c = ct.c_int()
+        status = dll.DxGetContrastLut(contrast_param_c, None, ct.byref(lut_length_c))
 
-        contrast_lut = (c_ubyte * lut_length_c.value)()
-        status = dll.DxGetContrastLut(contrast_param_c, byref(contrast_lut), byref(lut_length_c))
+        contrast_lut = (ct.c_ubyte * lut_length_c.value)()
+        status = dll.DxGetContrastLut(
+            contrast_param_c, ct.byref(contrast_lut), ct.byref(lut_length_c)
+        )
 
         return status, contrast_lut, lut_length_c.value
 
 
-if hasattr(dll, 'DxRaw8toRGB24'):
-    def dx_raw8_to_rgb24(input_address, output_address, width, height, convert_type, bayer_type, flip):
+if hasattr(dll, "DxRaw8toRGB24"):
+
+    def dx_raw8_to_rgb24(
+        input_address, output_address, width, height, convert_type, bayer_type, flip
+    ):
         """
         :brief  Convert Raw8 to Rgb24
         :param input_address:      The input raw image buff address, buff size = width * height
@@ -325,34 +403,51 @@ if hasattr(dll, 'DxRaw8toRGB24'):
         :return: status         State return value, See detail in DxStatus
                  data_array     Array of output images, buff size = width * height * 3
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        convert_type_c = c_uint()
+        convert_type_c = ct.c_uint()
         convert_type_c.value = convert_type
 
-        bayer_type_c = c_uint()
+        bayer_type_c = ct.c_uint()
         bayer_type_c.value = bayer_type
 
-        flip_c = c_bool()
+        flip_c = ct.c_bool()
         flip_c.value = flip
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        status = dll.DxRaw8toRGB24(input_address_p, output_address_p,
-                                   width_c, height_c, convert_type_c, bayer_type_c, flip_c)
+        status = dll.DxRaw8toRGB24(
+            input_address_p,
+            output_address_p,
+            width_c,
+            height_c,
+            convert_type_c,
+            bayer_type_c,
+            flip_c,
+        )
         return status
 
 
-if hasattr(dll, 'DxRaw8toRGB24Ex'):
-    def dx_raw8_to_rgb24_ex(input_address, output_address, width, height, convert_type, bayer_type, flip, channel_order):
+if hasattr(dll, "DxRaw8toRGB24Ex"):
+
+    def dx_raw8_to_rgb24_ex(
+        input_address,
+        output_address,
+        width,
+        height,
+        convert_type,
+        bayer_type,
+        flip,
+        channel_order,
+    ):
         """
         :brief  Convert Raw8 to Rgb24
         :param input_address:      The input raw image buff address, buff size = width * height
@@ -368,36 +463,45 @@ if hasattr(dll, 'DxRaw8toRGB24Ex'):
         :return: status         State return value, See detail in DxStatus
                  data_array     Array of output images, buff size = width * height * 3
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        convert_type_c = c_uint()
+        convert_type_c = ct.c_uint()
         convert_type_c.value = convert_type
 
-        bayer_type_c = c_uint()
+        bayer_type_c = ct.c_uint()
         bayer_type_c.value = bayer_type
 
-        flip_c = c_bool()
+        flip_c = ct.c_bool()
         flip_c.value = flip
 
-        channel_order_c = c_uint()
+        channel_order_c = ct.c_uint()
         channel_order_c.value = channel_order
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        status = dll.DxRaw8toRGB24Ex(input_address_p, output_address_p,
-                                   width_c, height_c, convert_type_c, bayer_type_c, flip_c, channel_order_c)
+        status = dll.DxRaw8toRGB24Ex(
+            input_address_p,
+            output_address_p,
+            width_c,
+            height_c,
+            convert_type_c,
+            bayer_type_c,
+            flip_c,
+            channel_order_c,
+        )
         return status
 
 
-if hasattr(dll, 'DxRaw16toRaw8'):
+if hasattr(dll, "DxRaw16toRaw8"):
+
     def dx_raw16_to_raw8(input_address, out_address, width, height, valid_bits):
         """
         :brief  Raw16 converted to Raw8
@@ -409,27 +513,29 @@ if hasattr(dll, 'DxRaw16toRaw8'):
         :return: status         State return value, See detail in DxStatus
                  data_array     Array of output images, buff size = width * height
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        valid_bits_c = c_uint()
+        valid_bits_c = ct.c_uint()
         valid_bits_c.value = valid_bits
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        out_address_p = c_void_p()
+        out_address_p = ct.c_void_p()
         out_address_p.value = out_address
 
-        status = dll.DxRaw16toRaw8(input_address_p, out_address_p,
-                                   width_c, height_c, valid_bits_c)
+        status = dll.DxRaw16toRaw8(
+            input_address_p, out_address_p, width_c, height_c, valid_bits_c
+        )
         return status
 
 
-if hasattr(dll, 'DxRotate90CW8B'):
+if hasattr(dll, "DxRotate90CW8B"):
+
     def dx_raw8_rotate_90_cw(input_address, out_address, width, height):
         """
         :brief  To rotate the 8-bit image clockwise by 90 degrees
@@ -440,24 +546,24 @@ if hasattr(dll, 'DxRotate90CW8B'):
         :return: status         State return value, See detail in DxStatus
                  data_array     Array of output images, buff size = width * height
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        out_address_p = c_void_p()
+        out_address_p = ct.c_void_p()
         out_address_p.value = out_address
 
-        status = dll.DxRotate90CW8B(input_address_p, out_address_p,
-                                   width_c, height_c)
+        status = dll.DxRotate90CW8B(input_address_p, out_address_p, width_c, height_c)
         return status
 
 
-if hasattr(dll, 'DxRotate90CCW8B'):
+if hasattr(dll, "DxRotate90CCW8B"):
+
     def dx_raw8_rotate_90_ccw(input_address, out_address, width, height):
         """
         :brief  To rotate the 8-bit image counter clockwise by 90 degrees
@@ -468,26 +574,33 @@ if hasattr(dll, 'DxRotate90CCW8B'):
         :return: status         State return value, See detail in DxStatus
                  data_array     Array of output images, buff size = width * height
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        out_address_p = c_void_p()
+        out_address_p = ct.c_void_p()
         out_address_p.value = out_address
 
-        status = dll.DxRotate90CCW8B(input_address_p, out_address_p,
-                                   width_c, height_c)
+        status = dll.DxRotate90CCW8B(input_address_p, out_address_p, width_c, height_c)
         return status
 
 
 if hasattr(dll, "DxImageImprovment"):
-    def dx_image_improvement(input_address, output_address, width, height,
-                             color_correction_param, contrast_lut, gamma_lut):
+
+    def dx_image_improvement(
+        input_address,
+        output_address,
+        width,
+        height,
+        color_correction_param,
+        contrast_lut,
+        gamma_lut,
+    ):
         """
         :brief      image quality improvement
         :param      input_address:              input buffer address, buff size = width * height *3
@@ -500,28 +613,45 @@ if hasattr(dll, "DxImageImprovment"):
         :return:    status                      State return value, See detail in DxStatus
                     data_array                  Array of output images, buff size = width * height * 3
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        color_correction_param_c = c_int64()
+        color_correction_param_c = ct.c_int64()
         color_correction_param_c.value = color_correction_param
 
-        status = dll.DxImageImprovment(input_address_p, output_address_p, width_c, height_c,
-                                       color_correction_param_c, contrast_lut, gamma_lut)
+        status = dll.DxImageImprovment(
+            input_address_p,
+            output_address_p,
+            width_c,
+            height_c,
+            color_correction_param_c,
+            contrast_lut,
+            gamma_lut,
+        )
         return status
 
+
 if hasattr(dll, "DxImageImprovmentEx"):
-    def dx_image_improvement_ex(input_address, output_address, width, height,
-                                color_correction_param, contrast_lut, gamma_lut, channel_order):
+
+    def dx_image_improvement_ex(
+        input_address,
+        output_address,
+        width,
+        height,
+        color_correction_param,
+        contrast_lut,
+        gamma_lut,
+        channel_order,
+    ):
         """
         :brief      image quality improvement
         :param      input_address:              input buffer address, buff size = width * height *3
@@ -535,30 +665,39 @@ if hasattr(dll, "DxImageImprovmentEx"):
         :return:    status                      State return value, See detail in DxStatus
                     data_array                  Array of output images, buff size = width * height * 3
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        color_correction_param_c = c_int64()
+        color_correction_param_c = ct.c_int64()
         color_correction_param_c.value = color_correction_param
 
-        channel_order_c = c_uint()
+        channel_order_c = ct.c_uint()
         channel_order_c.value = channel_order
 
-        status = dll.DxImageImprovmentEx(input_address_p, output_address_p, width_c, height_c,
-                                         color_correction_param_c, contrast_lut, gamma_lut, channel_order_c)
+        status = dll.DxImageImprovmentEx(
+            input_address_p,
+            output_address_p,
+            width_c,
+            height_c,
+            color_correction_param_c,
+            contrast_lut,
+            gamma_lut,
+            channel_order_c,
+        )
         return status
 
 
 if hasattr(dll, "DxBrightness"):
+
     def dx_brightness(input_address, output_address, image_size, factor):
         """
         :brief      Brightness adjustment (RGB24 or mono8)
@@ -568,23 +707,26 @@ if hasattr(dll, "DxBrightness"):
         :param      factor:                 brightness factor,range(-150 ~ 150)
         :return:    status:                 State return value, See detail in DxStatus
         """
-        image_size_c = c_uint32()
+        image_size_c = ct.c_uint32()
         image_size_c.value = image_size
 
-        factor_c = c_int32()
+        factor_c = ct.c_int32()
         factor_c.value = factor
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        status = dll.DxBrightness(input_address_p, output_address_p, image_size_c, factor_c)
+        status = dll.DxBrightness(
+            input_address_p, output_address_p, image_size_c, factor_c
+        )
         return status
 
 
 if hasattr(dll, "DxContrast"):
+
     def dx_contrast(input_address, output_address, image_size, factor):
         """
         :brief      Contrast adjustment (RGB24 or mono8)
@@ -594,49 +736,55 @@ if hasattr(dll, "DxContrast"):
         :param      factor:                 contrast factor,range(-50 ~ 100)
         :return:    status:                 State return value, See detail in DxStatus
         """
-        image_size_c = c_uint32()
+        image_size_c = ct.c_uint32()
         image_size_c.value = image_size
 
-        factor_c = c_int32()
+        factor_c = ct.c_int32()
         factor_c.value = factor
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        status = dll.DxContrast(input_address_p, output_address_p, image_size_c, factor_c)
+        status = dll.DxContrast(
+            input_address_p, output_address_p, image_size_c, factor_c
+        )
         return status
 
 
 if hasattr(dll, "DxSaturation"):
+
     def dx_saturation(input_address, output_address, image_size, factor):
         """
         :brief      Saturation adjustment (RGB24)
         :param      input_address:          input buffer address, buff size = width * height * 3
-        :param      output_address:         output buffer address, buff size = width * height * 3        
+        :param      output_address:         output buffer address, buff size = width * height * 3
         :param      image_size:             image size (width * height)
         :param      factor:                 saturation factor,range(0 ~ 128)
         :return:    status:                 State return value, See detail in DxStatus
         """
-        image_size_c = c_uint32()
+        image_size_c = ct.c_uint32()
         image_size_c.value = image_size
 
-        factor_c = c_int32()
+        factor_c = ct.c_int32()
         factor_c.value = factor
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        status = dll.DxSaturation(input_address_p, output_address_p, image_size_c, factor_c)
+        status = dll.DxSaturation(
+            input_address_p, output_address_p, image_size_c, factor_c
+        )
         return status
 
 
 if hasattr(dll, "DxAutoRawDefectivePixelCorrect"):
+
     def dx_auto_raw_defective_pixel_correct(inout_address, width, height, bit_num):
         """
         :brief      Auto raw defective pixel correct,Support image from Raw8 to Raw16, the bit number is actual
@@ -651,23 +799,26 @@ if hasattr(dll, "DxAutoRawDefectivePixelCorrect"):
                                                                           range:8 ~ 16)
         :return:    status:                 State return value, See detail in DxStatus
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        bit_num_c = c_int32()
+        bit_num_c = ct.c_int32()
         bit_num_c.value = bit_num
 
-        inout_address_p = c_void_p()
+        inout_address_p = ct.c_void_p()
         inout_address_p.value = inout_address
 
-        status = dll.DxAutoRawDefectivePixelCorrect(inout_address_p, width_c, height_c, bit_num_c)
+        status = dll.DxAutoRawDefectivePixelCorrect(
+            inout_address_p, width_c, height_c, bit_num_c
+        )
         return status
 
 
 if hasattr(dll, "DxSharpen24B"):
+
     def dx_sharpen_24b(input_address, output_address, width, height, factor):
         """
         :brief      Sharpen adjustment (RGB24)
@@ -678,26 +829,29 @@ if hasattr(dll, "DxSharpen24B"):
         :param      factor:                 sharpen factor, range(0.1~5.0)
         :return:    status:                 State return value, See detail in DxStatus
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        factor_c = c_float()
+        factor_c = ct.c_float()
         factor_c.value = factor
 
-        status = dll.DxSharpen24B(input_address_p, output_address_p, width_c, height_c, factor_c)
+        status = dll.DxSharpen24B(
+            input_address_p, output_address_p, width_c, height_c, factor_c
+        )
         return status
 
 
 if hasattr(dll, "DxGetWhiteBalanceRatio"):
+
     def dx_get_white_balance_ratio(input_address, width, height):
         """
         :brief      Get white balance ratios(RGB24), In order to calculate accurately, the camera should
@@ -708,31 +862,38 @@ if hasattr(dll, "DxGetWhiteBalanceRatio"):
         :return:    status:                 State return value, See detail in DxStatus
                     (r_ratio, g_ratio, b_ratio):    rgb ratio tuple
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        r_ratio_c = c_double()
+        r_ratio_c = ct.c_double()
         r_ratio_c.value = 0
 
-        g_ratio_c = c_double()
+        g_ratio_c = ct.c_double()
         g_ratio_c.value = 0
 
-        b_ratio_c = c_double()
+        b_ratio_c = ct.c_double()
         b_ratio_c.value = 0
 
-        status = dll.DxGetWhiteBalanceRatio(input_address_p, width_c, height_c, byref(r_ratio_c),
-                                            byref(g_ratio_c), byref(b_ratio_c))
+        status = dll.DxGetWhiteBalanceRatio(
+            input_address_p,
+            width_c,
+            height_c,
+            ct.byref(r_ratio_c),
+            ct.byref(g_ratio_c),
+            ct.byref(b_ratio_c),
+        )
 
         return status, (r_ratio_c.value, g_ratio_c.value, b_ratio_c.value)
 
 
 if hasattr(dll, "DxImageMirror"):
+
     def dx_image_mirror(input_address, output_address, width, height, mirror_mode):
         """
         :brief      image mirror(raw8)
@@ -743,27 +904,33 @@ if hasattr(dll, "DxImageMirror"):
         :param      mirror_mode:            mirror mode
         :return:    status:                 State return value, See detail in DxStatus
         """
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        mirror_mode_c = c_uint()
+        mirror_mode_c = ct.c_uint()
         mirror_mode_c.value = mirror_mode
 
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        status = dll.DxImageMirror(input_address_p, output_address_p, width_c, height_c, mirror_mode_c)
+        status = dll.DxImageMirror(
+            input_address_p, output_address_p, width_c, height_c, mirror_mode_c
+        )
 
         return status
 
+
 if hasattr(dll, "DxRaw8ImgProcess"):
-    def dx_raw8_image_process(input_address, output_address, width, height, color_img_process_param):
+
+    def dx_raw8_image_process(
+        input_address, output_address, width, height, color_img_process_param
+    ):
         """
         :brief  Raw8 image process
         :param  input_address:              input buffer address, buff size = width * height
@@ -772,20 +939,22 @@ if hasattr(dll, "DxRaw8ImgProcess"):
         :param  height:                     image height
         :param  color_img_process_param:    Raw8 image process param, refer to DxColorImgProcess
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
         color_img_process_param_c = ColorImgProcess()
-        color_img_process_param_c.defective_pixel_correct = color_img_process_param.defective_pixel_correct
+        color_img_process_param_c.defective_pixel_correct = (
+            color_img_process_param.defective_pixel_correct
+        )
         color_img_process_param_c.denoise = color_img_process_param.denoise
         color_img_process_param_c.sharpness = color_img_process_param.sharpness
         color_img_process_param_c.accelerate = color_img_process_param.accelerate
@@ -793,27 +962,43 @@ if hasattr(dll, "DxRaw8ImgProcess"):
             color_img_process_param_c.arr_cc = None
             color_img_process_param_c.cc_buf_length = 0
         else:
-            color_img_process_param_c.arr_cc = addressof(color_img_process_param.cc_param.get_ctype_array())
-            color_img_process_param_c.cc_buf_length = color_img_process_param.cc_param.get_length()
+            color_img_process_param_c.arr_cc = ct.addressof(
+                color_img_process_param.cc_param.get_ctype_array()
+            )
+            color_img_process_param_c.cc_buf_length = (
+                color_img_process_param.cc_param.get_length()
+            )
         color_img_process_param_c.sharp_factor = color_img_process_param.sharp_factor
         if color_img_process_param.pro_lut is None:
             color_img_process_param_c.pro_lut = None
             color_img_process_param_c.lut_length = 0
         else:
-            color_img_process_param_c.pro_lut = addressof(color_img_process_param.pro_lut.get_ctype_array())
-            color_img_process_param_c.lut_length = color_img_process_param.pro_lut.get_length()
+            color_img_process_param_c.pro_lut = ct.addressof(
+                color_img_process_param.pro_lut.get_ctype_array()
+            )
+            color_img_process_param_c.lut_length = (
+                color_img_process_param.pro_lut.get_length()
+            )
         color_img_process_param_c.cv_type = color_img_process_param.convert_type
         color_img_process_param_c.layout = color_img_process_param.color_filter_layout
         color_img_process_param_c.flip = color_img_process_param.flip
 
-        status = dll.DxRaw8ImgProcess(input_address_p, output_address_p, width_c,
-                                      height_c, byref(color_img_process_param_c))
+        status = dll.DxRaw8ImgProcess(
+            input_address_p,
+            output_address_p,
+            width_c,
+            height_c,
+            ct.byref(color_img_process_param_c),
+        )
 
         return status
 
 
 if hasattr(dll, "DxMono8ImgProcess"):
-    def dx_mono8_image_process(input_address, output_address, width, height, mono_img_process_param):
+
+    def dx_mono8_image_process(
+        input_address, output_address, width, height, mono_img_process_param
+    ):
         """
         :brief  mono8 image process
         :param  input_address:              input buffer address, buff size = width * height
@@ -822,20 +1007,22 @@ if hasattr(dll, "DxMono8ImgProcess"):
         :param  height:                     image height
         :param  mono_img_process_param:     mono8 image process param, refer to DxMonoImgProcess
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
         mono_img_process_param_c = MonoImgProcess()
-        mono_img_process_param_c.defective_pixel_correct = mono_img_process_param.defective_pixel_correct
+        mono_img_process_param_c.defective_pixel_correct = (
+            mono_img_process_param.defective_pixel_correct
+        )
         mono_img_process_param_c.sharpness = mono_img_process_param.sharpness
         mono_img_process_param_c.accelerate = mono_img_process_param.accelerate
         mono_img_process_param_c.sharp_factor = mono_img_process_param.sharp_factor
@@ -843,16 +1030,29 @@ if hasattr(dll, "DxMono8ImgProcess"):
             mono_img_process_param_c.pro_lut = None
             mono_img_process_param_c.lut_length = 0
         else:
-            mono_img_process_param_c.pro_lut = addressof(mono_img_process_param.pro_lut.get_ctype_array())
-            mono_img_process_param_c.lut_length = mono_img_process_param.pro_lut.get_length()
+            mono_img_process_param_c.pro_lut = ct.addressof(
+                mono_img_process_param.pro_lut.get_ctype_array()
+            )
+            mono_img_process_param_c.lut_length = (
+                mono_img_process_param.pro_lut.get_length()
+            )
 
-        status = dll.DxMono8ImgProcess(input_address_p, output_address_p, width_c,
-                                       height_c, byref(mono_img_process_param_c))
+        status = dll.DxMono8ImgProcess(
+            input_address_p,
+            output_address_p,
+            width_c,
+            height_c,
+            ct.byref(mono_img_process_param_c),
+        )
 
         return status
 
-if hasattr(dll, 'DxGetFFCCoefficients'):
-    def dx_get_ffc_coefficients(bright_img, dark_img, actual_bits, bayer_type, width, height, target_value):
+
+if hasattr(dll, "DxGetFFCCoefficients"):
+
+    def dx_get_ffc_coefficients(
+        bright_img, dark_img, actual_bits, bayer_type, width, height, target_value
+    ):
         """
         :brief  Get Flat Field Correction Coefficients
                 (only support raw8 raw10 raw12)
@@ -875,35 +1075,52 @@ if hasattr(dll, 'DxGetFFCCoefficients'):
         field_correction_process_c.actual_bits = actual_bits
         field_correction_process_c.bayer_type = bayer_type
 
-        ffc_coefficients_len_c = c_int()
+        ffc_coefficients_len_c = ct.c_int()
         ffc_coefficients_len_c.value = 0
 
         if target_value is None:
             # Get length of ffc coefficients
-            dll.DxGetFFCCoefficients(field_correction_process_c, None, byref(ffc_coefficients_len_c), None)
+            dll.DxGetFFCCoefficients(
+                field_correction_process_c, None, ct.byref(ffc_coefficients_len_c), None
+            )
 
             # Create buff to get coefficients data
-            ffc_coefficients_c = (c_ubyte * ffc_coefficients_len_c.value)()
-            status = dll.DxGetFFCCoefficients(field_correction_process_c, byref(ffc_coefficients_c),
-                                              byref(ffc_coefficients_len_c), None)
+            ffc_coefficients_c = (ct.c_ubyte * ffc_coefficients_len_c.value)()
+            status = dll.DxGetFFCCoefficients(
+                field_correction_process_c,
+                ct.byref(ffc_coefficients_c),
+                ct.byref(ffc_coefficients_len_c),
+                None,
+            )
         else:
-            target_value_c = c_int()
+            target_value_c = ct.c_int()
             target_value_c.value = target_value
 
             # Get length of ffc coefficients
-            dll.DxGetFFCCoefficients(field_correction_process_c, None, byref(ffc_coefficients_len_c),
-                                     byref(target_value_c))
+            dll.DxGetFFCCoefficients(
+                field_correction_process_c,
+                None,
+                ct.byref(ffc_coefficients_len_c),
+                ct.byref(target_value_c),
+            )
 
             # Create buff to get coefficients data
-            ffc_coefficients_c = (c_ubyte * ffc_coefficients_len_c.value)()
-            status = dll.DxGetFFCCoefficients(field_correction_process_c, byref(ffc_coefficients_c),
-                                              byref(ffc_coefficients_len_c), byref(target_value_c))
+            ffc_coefficients_c = (ct.c_ubyte * ffc_coefficients_len_c.value)()
+            status = dll.DxGetFFCCoefficients(
+                field_correction_process_c,
+                ct.byref(ffc_coefficients_c),
+                ct.byref(ffc_coefficients_len_c),
+                ct.byref(target_value_c),
+            )
 
         return status, ffc_coefficients_c, ffc_coefficients_len_c.value
 
 
 if hasattr(dll, "DxFlatFieldCorrection"):
-    def dx_flat_field_correction(input_address, output_address, actual_bits, width, height, ffc_coefficients):
+
+    def dx_flat_field_correction(
+        input_address, output_address, actual_bits, width, height, ffc_coefficients
+    ):
         """
         :brief  Flat Field Correction Process
         :param      input_address:          input buffer address, buff size = width * height
@@ -914,30 +1131,39 @@ if hasattr(dll, "DxFlatFieldCorrection"):
         :param      ffc_coefficients:       flat field correction coefficients data array
         :return:    status:                 State return value, See detail in DxStatus
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        actual_bits_c = c_uint()
+        actual_bits_c = ct.c_uint()
         actual_bits_c.value = actual_bits
 
-        ffc_coefficients_len_c = c_int()
+        ffc_coefficients_len_c = ct.c_int()
         ffc_coefficients_len_c.value = len(ffc_coefficients)
 
-        status = dll.DxFlatFieldCorrection(input_address_p, output_address_p, actual_bits_c, width_c, height_c,
-                                           byref(ffc_coefficients), byref(ffc_coefficients_len_c))
+        status = dll.DxFlatFieldCorrection(
+            input_address_p,
+            output_address_p,
+            actual_bits_c,
+            width_c,
+            height_c,
+            ct.byref(ffc_coefficients),
+            ct.byref(ffc_coefficients_len_c),
+        )
 
         return status
 
+
 if hasattr(dll, "DxRaw12PackedToRaw16"):
+
     def dx_raw12_packed_to_raw16(input_address, output_address, width, height):
         """
         :brief  Convert Raw12Packed to Raw16
@@ -947,23 +1173,27 @@ if hasattr(dll, "DxRaw12PackedToRaw16"):
         :param      height:                 image height
         :return:    status:                 State return value, See detail in DxStatus
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        status = dll.DxRaw12PackedToRaw16(input_address_p, output_address_p, width_c, height_c)
+        status = dll.DxRaw12PackedToRaw16(
+            input_address_p, output_address_p, width_c, height_c
+        )
 
         return status
 
+
 if hasattr(dll, "DxRaw10PackedToRaw16"):
+
     def dx_raw10_packed_to_raw16(input_address, output_address, width, height):
         """
         :brief  Convert Raw10Packed to Raw16
@@ -973,23 +1203,27 @@ if hasattr(dll, "DxRaw10PackedToRaw16"):
         :param      height:                 image height
         :return:    status:                 State return value, See detail in DxStatus
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        status = dll.DxRaw10PackedToRaw16(input_address_p, output_address_p, width_c, height_c)
+        status = dll.DxRaw10PackedToRaw16(
+            input_address_p, output_address_p, width_c, height_c
+        )
 
         return status
 
+
 if hasattr(dll, "DxRGB48toRGB24"):
+
     def dx_rgb48_to_rgb24(input_address, output_address, width, height, valid_bit):
         """
         :brief  Convert RGB48 to RGB24
@@ -1000,27 +1234,40 @@ if hasattr(dll, "DxRGB48toRGB24"):
         :param      valid_bit:             image valid bit
         :return:    status:                 State return value, See detail in DxStatus
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        valid_bit_c = c_uint()
+        valid_bit_c = ct.c_uint()
         valid_bit_c.value = valid_bit
 
-        status = dll.DxRGB48toRGB24(input_address_p, output_address_p, width_c, height_c, valid_bit_c)
+        status = dll.DxRGB48toRGB24(
+            input_address_p, output_address_p, width_c, height_c, valid_bit_c
+        )
 
         return status
 
-if hasattr(dll, 'DxRaw16toRGB48'):
-    def dx_raw16_to_rgb48(input_address, output_address, width, height, actual_bits, convert_type, bayer_type, flip):
+
+if hasattr(dll, "DxRaw16toRGB48"):
+
+    def dx_raw16_to_rgb48(
+        input_address,
+        output_address,
+        width,
+        height,
+        actual_bits,
+        convert_type,
+        bayer_type,
+        flip,
+    ):
         """
         :brief  Convert Raw16 to RGB48
         :param input_address:      The input raw image buff address, buff size = width * height
@@ -1036,36 +1283,56 @@ if hasattr(dll, 'DxRaw16toRGB48'):
         :return: status            State return value, See detail in DxStatus
                  data_array        Array of output images, buff size = width * height * 3
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        actual_bits_c = c_uint()
+        actual_bits_c = ct.c_uint()
         actual_bits_c.value = actual_bits
 
-        convert_type_c = c_uint()
+        convert_type_c = ct.c_uint()
         convert_type_c.value = convert_type
 
-        bayer_type_c = c_uint()
+        bayer_type_c = ct.c_uint()
         bayer_type_c.value = bayer_type
 
-        flip_c = c_bool()
+        flip_c = ct.c_bool()
         flip_c.value = flip
 
-        status = dll.DxRaw16toRGB48(input_address_p, output_address_p,
-                                    width_c, height_c, actual_bits_c, convert_type_c, bayer_type_c, flip_c)
+        status = dll.DxRaw16toRGB48(
+            input_address_p,
+            output_address_p,
+            width_c,
+            height_c,
+            actual_bits_c,
+            convert_type_c,
+            bayer_type_c,
+            flip_c,
+        )
         return status
 
-if hasattr(dll, 'DxRaw8toARGB32'):
-    def dx_raw8_to_rgb32(input_address, output_address, width, height, stride, convert_type, bayer_type, flip, alpha):
+
+if hasattr(dll, "DxRaw8toARGB32"):
+
+    def dx_raw8_to_rgb32(
+        input_address,
+        output_address,
+        width,
+        height,
+        stride,
+        convert_type,
+        bayer_type,
+        flip,
+        alpha,
+    ):
         """
         :brief  Convert Raw8 to ARGB32
         :param input_address:      The input raw image buff address, buff size = width * height
@@ -1082,40 +1349,56 @@ if hasattr(dll, 'DxRaw8toARGB32'):
         :return: status            State return value, See detail in DxStatus
                  data_array        Array of output images, buff size = width * height * 3
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        stride_c = c_uint32()
+        stride_c = ct.c_uint32()
         stride_c.value = stride
 
-        convert_type_c = c_uint()
+        convert_type_c = ct.c_uint()
         convert_type_c.value = convert_type
 
-        bayer_type_c = c_uint()
+        bayer_type_c = ct.c_uint()
         bayer_type_c.value = bayer_type
 
-        flip_c = c_bool()
+        flip_c = ct.c_bool()
         flip_c.value = flip
 
-        alpha_c = c_uint32()
+        alpha_c = ct.c_uint32()
         alpha_c.value = alpha
 
-        status = dll.DxRaw8toARGB32(input_address_p, output_address_p,
-                                    width_c, height_c, stride_c, convert_type_c, bayer_type_c, flip_c, alpha_c)
+        status = dll.DxRaw8toARGB32(
+            input_address_p,
+            output_address_p,
+            width_c,
+            height_c,
+            stride_c,
+            convert_type_c,
+            bayer_type_c,
+            flip_c,
+            alpha_c,
+        )
         return status
 
-if hasattr(dll, 'DxStaticDefectCorrection'):
-    def dx_static_defect_correction(input_address, output_address, defect_correction, defect_pos_buffer_address,
-                                    defect_pos_buffer_size):
+
+if hasattr(dll, "DxStaticDefectCorrection"):
+
+    def dx_static_defect_correction(
+        input_address,
+        output_address,
+        defect_correction,
+        defect_pos_buffer_address,
+        defect_pos_buffer_size,
+    ):
         """
         :brief Image defect pixel correction
         :param input_address:                      The input raw image buff address, buff size = width * height
@@ -1127,28 +1410,35 @@ if hasattr(dll, 'DxStaticDefectCorrection'):
         :return: status                            State return value, See detail in DxStatus
                  data_array                        Array of output images, buff size = width * height * 3
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
         defect_correction_c = defect_correction
 
-        defect_pos_buffer_address_p = c_void_p()
+        defect_pos_buffer_address_p = ct.c_void_p()
         defect_pos_buffer_address_p.value = defect_pos_buffer_address
 
-        defect_pos_buffer_size_c = c_uint32()
+        defect_pos_buffer_size_c = ct.c_uint32()
         defect_pos_buffer_size_c.value = defect_pos_buffer_size
 
-        status = dll.DxStaticDefectCorrection(input_address_p, output_address_p,
-                                              defect_correction_c, defect_pos_buffer_address_p,
-                                              defect_pos_buffer_size_c)
+        status = dll.DxStaticDefectCorrection(
+            input_address_p,
+            output_address_p,
+            defect_correction_c,
+            defect_pos_buffer_address_p,
+            defect_pos_buffer_size_c,
+        )
         return status
 
-if hasattr(dll, 'DxCalcCameraLutBuffer'):
-    def dx_calc_camera_lut_buffer(contrast_param, gamma, light_ness, lut_address,
-                                  lut_length_address):
+
+if hasattr(dll, "DxCalcCameraLutBuffer"):
+
+    def dx_calc_camera_lut_buffer(
+        contrast_param, gamma, light_ness, lut_address, lut_length_address
+    ):
         """
         :brief calculating lookup table of camera
         :param contrast_param:                      contrast param,range(-50~100)
@@ -1159,24 +1449,26 @@ if hasattr(dll, 'DxCalcCameraLutBuffer'):
 
         Lookup table length should be obtained through the interface GXGetBufferLength.
         """
-        contrast_param_c = c_int32()
+        contrast_param_c = ct.c_int32()
         contrast_param_c.value = contrast_param
 
-        gamma_c = c_double()
+        gamma_c = ct.c_double()
         gamma_c.value = gamma
 
-        lightness_c = c_int32()
+        lightness_c = ct.c_int32()
         lightness_c.value = light_ness
 
-        lut_address_c = c_void_p()
+        lut_address_c = ct.c_void_p()
         lut_address_c.value = lut_address
 
-        status = dll.DxCalcCameraLutBuffer(contrast_param_c, gamma_c,
-                                           lightness_c, lut_address_c,
-                                           lut_length_address)
+        status = dll.DxCalcCameraLutBuffer(
+            contrast_param_c, gamma_c, lightness_c, lut_address_c, lut_length_address
+        )
         return status
 
-if hasattr(dll, 'DxReadLutFile'):
+
+if hasattr(dll, "DxReadLutFile"):
+
     def dx_read_lut_file(lut_file_path, lut_address, lut_length_address):
         """
         :brief read lut file
@@ -1194,24 +1486,27 @@ if hasattr(dll, 'DxReadLutFile'):
                  data_array                        Array of output images, buff size = width * height * 3
         """
 
-        lut_address_p = c_void_p()
+        lut_address_p = ct.c_void_p()
         lut_address_p.value = lut_address
 
-        status = dll.DxReadLutFile(lut_file_path, lut_address_p,
-                                   lut_length_address)
+        status = dll.DxReadLutFile(lut_file_path, lut_address_p, lut_length_address)
         return status
 
-if hasattr(dll, 'DxImageFormatConvertCreate'):
+
+if hasattr(dll, "DxImageFormatConvertCreate"):
+
     def dx_image_format_convert_create():
         """
         :brief Create handle for Image Format Convert
         :param  handle          [in] Image Format convert handle
         """
-        handle = c_void_p()
-        status = dll.DxImageFormatConvertCreate(pointer(handle))
+        handle = ct.c_void_p()
+        status = dll.DxImageFormatConvertCreate(ct.pointer(handle))
         return status, handle
 
-if hasattr(dll, 'DxImageFormatConvertDestroy'):
+
+if hasattr(dll, "DxImageFormatConvertDestroy"):
+
     def dx_image_format_convert_destroy(handle):
         """
         :brief Destroy handle for Image Format Convert
@@ -1220,36 +1515,57 @@ if hasattr(dll, 'DxImageFormatConvertDestroy'):
         status = dll.DxImageFormatConvertDestroy(handle)
         return status
 
-if hasattr(dll, 'DxImageFormatConvert'):
-    def dx_image_format_convert(handle, input_address, input_length, output_address, output_length, fixel_format, width,
-                                height, flip):
+
+if hasattr(dll, "DxImageFormatConvert"):
+
+    def dx_image_format_convert(
+        handle,
+        input_address,
+        input_length,
+        output_address,
+        output_length,
+        fixel_format,
+        width,
+        height,
+        flip,
+    ):
         """
         :brief Image Format Convert Process
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-
-        fixel_format_c = c_uint()
+        fixel_format_c = ct.c_uint()
         fixel_format_c.value = fixel_format
 
-        flip_c = c_bool()
+        flip_c = ct.c_bool()
         flip_c.value = flip
 
-        status = dll.DxImageFormatConvert(handle, input_address_p, input_length, output_address_p,
-                                          output_length, fixel_format_c, width_c, height_c, flip_c)
+        status = dll.DxImageFormatConvert(
+            handle,
+            input_address_p,
+            input_length,
+            output_address_p,
+            output_length,
+            fixel_format_c,
+            width_c,
+            height_c,
+            flip_c,
+        )
         return status
 
-if hasattr(dll, 'DxImageFormatConvertSetOutputPixelFormat'):
+
+if hasattr(dll, "DxImageFormatConvertSetOutputPixelFormat"):
+
     def dx_image_format_convert_set_output_pixel_format(handle, pixel_format):
         """
         :brief Set Bayer Pixel Format Convert Type
@@ -1257,13 +1573,15 @@ if hasattr(dll, 'DxImageFormatConvertSetOutputPixelFormat'):
         :param  pixel_format   [in] Pixel Format
         """
 
-        pixel_format_c = c_uint()
+        pixel_format_c = ct.c_uint()
         pixel_format_c.value = pixel_format
 
         status = dll.DxImageFormatConvertSetOutputPixelFormat(handle, pixel_format_c)
         return status
 
-if hasattr(dll, 'DxImageFormatConvertSetAlphaValue'):
+
+if hasattr(dll, "DxImageFormatConvertSetAlphaValue"):
+
     def dx_image_format_convert_set_alpha_value(handle, alpha_value):
         """
         :brief Set Bayer Pixel Format Convert Type
@@ -1271,13 +1589,15 @@ if hasattr(dll, 'DxImageFormatConvertSetAlphaValue'):
         :param  alpha_value     [in] Alpha channel value(range of 0~255)
         """
 
-        alpha_value_c = c_uint()
+        alpha_value_c = ct.c_uint()
         alpha_value_c.value = alpha_value
 
         status = dll.DxImageFormatConvertSetAlphaValue(handle, alpha_value_c)
         return status
 
-if hasattr(dll, 'DxImageFormatConvertSetInterpolationType'):
+
+if hasattr(dll, "DxImageFormatConvertSetInterpolationType"):
+
     def dx_image_format_convert_set_interpolation_type(handle, cvt_type):
         """
         :brief Set Bayer Pixel Format Convert Type
@@ -1288,7 +1608,9 @@ if hasattr(dll, 'DxImageFormatConvertSetInterpolationType'):
         status = dll.DxImageFormatConvertSetInterpolationType(handle, cvt_type)
         return status
 
-if hasattr(dll, 'DxImageFormatConvertSetValidBits'):
+
+if hasattr(dll, "DxImageFormatConvertSetValidBits"):
+
     def dx_image_format_convert_set_valid_bits(handle, valid_bits):
         """
         :brief Set Valid Bits
@@ -1299,7 +1621,9 @@ if hasattr(dll, 'DxImageFormatConvertSetValidBits'):
         status = dll.DxImageFormatConvertSetValidBits(handle, valid_bits)
         return status
 
-if hasattr(dll, 'DxImageFormatConvertGetOutputPixelFormat'):
+
+if hasattr(dll, "DxImageFormatConvertGetOutputPixelFormat"):
+
     def dx_image_format_convert_get_output_pixel_format(handle):
         """
         :brief Set Output Pixel type
@@ -1307,13 +1631,19 @@ if hasattr(dll, 'DxImageFormatConvertGetOutputPixelFormat'):
         :param  pixel_format   [out] Pixel Format
         """
 
-        pixel_format_c = c_uint()
+        pixel_format_c = ct.c_uint()
 
-        status = dll.DxImageFormatConvertGetOutputPixelFormat(handle, byref(pixel_format_c))
+        status = dll.DxImageFormatConvertGetOutputPixelFormat(
+            handle, ct.byref(pixel_format_c)
+        )
         return status, pixel_format_c.value
 
-if hasattr(dll, 'DxImageFormatConvertGetBufferSizeForConversion'):
-    def dx_image_format_convert_get_buffer_size_for_conversion(handle, pixel_format, width, height):
+
+if hasattr(dll, "DxImageFormatConvertGetBufferSizeForConversion"):
+
+    def dx_image_format_convert_get_buffer_size_for_conversion(
+        handle, pixel_format, width, height
+    ):
         """
         :brief Set Output Pixel type
         :param  handle          [in] Image Format convert handle
@@ -1322,22 +1652,25 @@ if hasattr(dll, 'DxImageFormatConvertGetBufferSizeForConversion'):
         :param  height          [in]   Image Height
         :param  buffer_size_address     [out]  Image buffer size
         """
-        pixel_format_c = c_uint()
+        pixel_format_c = ct.c_uint()
         pixel_format_c.value = pixel_format
 
-        width_c = c_uint()
+        width_c = ct.c_uint()
         width_c.value = width
 
-        height_c = c_uint()
+        height_c = ct.c_uint()
         height_c.value = height
 
-        buffer_size_c = c_int()
+        buffer_size_c = ct.c_int()
 
-        status = dll.DxImageFormatConvertGetBufferSizeForConversion(handle, pixel_format_c, width_c,
-                                                                    height_c, byref(buffer_size_c))
+        status = dll.DxImageFormatConvertGetBufferSizeForConversion(
+            handle, pixel_format_c, width_c, height_c, ct.byref(buffer_size_c)
+        )
         return status, buffer_size_c.value
 
+
 if hasattr(dll, "DxRotate90CW8B"):
+
     def dx_rotate_90_cw8b(input_address, output_address, width, height):
         """
         :brief  To rotate the 8-bit image clockwise by 90 degrees
@@ -1348,23 +1681,27 @@ if hasattr(dll, "DxRotate90CW8B"):
 
         :return emStatus
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        status = dll.DxRotate90CW8B(input_address_p, output_address_p, width_c, height_c)
+        status = dll.DxRotate90CW8B(
+            input_address_p, output_address_p, width_c, height_c
+        )
 
         return status
 
+
 if hasattr(dll, "DxRotate90CCW8B"):
+
     def dx_rotate_90_ccw8b(input_address, output_address, width, height):
         """
         :brief  To rotate the 8-bit image counter by 90 degrees
@@ -1375,23 +1712,27 @@ if hasattr(dll, "DxRotate90CCW8B"):
 
         :return emStatus
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        status = dll.DxRotate90CCW8B(input_address_p, output_address_p, width_c, height_c)
+        status = dll.DxRotate90CCW8B(
+            input_address_p, output_address_p, width_c, height_c
+        )
 
         return status
 
+
 if hasattr(dll, "DxRotate90CW16B"):
+
     def dx_rotate_90_cw16b(input_address, output_address, width, height):
         """
         :brief  To rotate the 16-bit image clockwise by 90 degrees
@@ -1402,23 +1743,27 @@ if hasattr(dll, "DxRotate90CW16B"):
 
         :return emStatus
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        status = dll.DxRotate90CW16B(input_address_p, output_address_p, width_c, height_c)
+        status = dll.DxRotate90CW16B(
+            input_address_p, output_address_p, width_c, height_c
+        )
 
         return status
 
+
 if hasattr(dll, "DxRotate90CCW16B"):
+
     def dx_rotate_90_ccw16b(input_address, output_address, width, height):
         """
         :brief  To rotate the 16-bit image counter by 90 degrees
@@ -1429,23 +1774,27 @@ if hasattr(dll, "DxRotate90CCW16B"):
 
         :return emStatus
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        status = dll.DxRotate90CCW16B(input_address_p, output_address_p, width_c, height_c)
+        status = dll.DxRotate90CCW16B(
+            input_address_p, output_address_p, width_c, height_c
+        )
 
         return status
 
+
 if hasattr(dll, "DxImageMirror16B"):
+
     def dx_image_mirror_16b(input_address, output_address, width, height, mirro_mode):
         """
         :brief  image mirror(Raw16 or 16bit image)
@@ -1457,18 +1806,20 @@ if hasattr(dll, "DxImageMirror16B"):
 
         :return emStatus
         """
-        input_address_p = c_void_p()
+        input_address_p = ct.c_void_p()
         input_address_p.value = input_address
 
-        output_address_p = c_void_p()
+        output_address_p = ct.c_void_p()
         output_address_p.value = output_address
 
-        width_c = c_uint32()
+        width_c = ct.c_uint32()
         width_c.value = width
 
-        height_c = c_uint32()
+        height_c = ct.c_uint32()
         height_c.value = height
 
-        status = dll.DxImageMirror16B(input_address_p, output_address_p, width_c, height_c, mirro_mode)
+        status = dll.DxImageMirror16B(
+            input_address_p, output_address_p, width_c, height_c, mirro_mode
+        )
 
         return status

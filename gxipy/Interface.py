@@ -2,13 +2,8 @@
 # -*- coding:utf-8 -*-
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
-import numpy
-from gxipy.gxwrapper import *
-from gxipy.dxwrapper import *
-from gxipy.gxidef import *
-from gxipy.FeatureControl import *
-from gxipy.StatusProcessor import *
-import types
+from .FeatureControl import FeatureControl
+
 
 class Interface:
     def __init__(self, handle, interface_info):
@@ -27,7 +22,7 @@ class Interface:
         """
         return self.__interface_info
 
-    #def get_all_device_info_list(self):
+    # def get_all_device_info_list(self):
     #    return None
 
     def get_feature_control(self):
@@ -35,5 +30,5 @@ class Interface:
         :brief  Get interface feature control object
         :return: Interface feature control object
         """
-        feature_control = FeatureControl( self.__interface_handle)
+        feature_control = FeatureControl(self.__interface_handle)
         return feature_control

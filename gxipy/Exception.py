@@ -2,12 +2,8 @@
 # -*- coding:utf-8 -*-
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
-import numpy
-from gxipy.gxwrapper import *
-from gxipy.dxwrapper import *
-from gxipy.gxidef import *
-from gxipy.gxiapi import *
-import types
+from gxipy.gxwrapper import GxStatusList
+
 
 class UnexpectedError(Exception):
     """
@@ -15,6 +11,7 @@ class UnexpectedError(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -25,6 +22,7 @@ class NotFoundTL(Exception):
     param:  args             exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -35,6 +33,7 @@ class NotFoundDevice(Exception):
     param:  args              exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -45,6 +44,7 @@ class OffLine(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -55,6 +55,7 @@ class InvalidParameter(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -65,6 +66,7 @@ class InvalidHandle(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -75,6 +77,7 @@ class InvalidCall(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -85,6 +88,7 @@ class InvalidAccess(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -95,6 +99,7 @@ class NeedMoreBuffer(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -105,6 +110,7 @@ class FeatureTypeError(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -115,14 +121,18 @@ class OutOfRange(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
+
+
 class NoImplemented(Exception):
     """
     brief:  param out of Implemented exception
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -133,6 +143,7 @@ class NotInitApi(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -143,6 +154,7 @@ class Timeout(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
@@ -153,6 +165,7 @@ class ParameterTypeError(Exception):
     param:  args            exception description
     return: none
     """
+
     def __init__(self, args):
         Exception.__init__(self, args)
 
