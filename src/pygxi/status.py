@@ -8,7 +8,7 @@ from pygxi.gxwrapper import GxStatusList, gx_get_last_error
 ERROR_SIZE = 1024
 
 
-def check_return_status(status: GxStatusList, class_name: str, function_name: str) -> None:
+def check_return_status(status: int, class_name: str, function_name: str) -> None:
     """
     Check the return status of a function and raise an exception if the status indicates an error.
 
@@ -25,7 +25,7 @@ def check_return_status(status: GxStatusList, class_name: str, function_name: st
     -----
     The appropriate exception is raised based on the status code.
     """
-    if status != GxStatusList.SUCCESS: # type: ignore
+    if status != GxStatusList.SUCCESS:
         _, _, string = gx_get_last_error(ERROR_SIZE)
         error_message = "%s.%s:%s" % (class_name, function_name, string)
         raise_error(status, error_message)

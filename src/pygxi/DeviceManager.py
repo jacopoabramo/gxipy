@@ -2,8 +2,10 @@
 # -*- coding:utf-8 -*-
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
+from __future__ import annotations
+
 import pygxi.gxwrapper as gx
-from typing import Any
+from typing import TypedDict
 
 from .Device import Device, GEVDevice, U2Device, U3VDevice
 from .errors import InvalidParameterError, DeviceNotFoundError, ParameterTypeError
@@ -14,11 +16,73 @@ from .Interface import Interface
 from .status import check_return_status
 
 
+class InterfaceInfo(TypedDict):
+    """Interface information dictionary."""
+
+    handle: int
+    type: int
+    display_name: str
+    interface_id: str
+    serial_number: str
+    description: str
+    init_flag: int
+    reserved: list[int]
+
+
+class DeviceInfo(TypedDict):
+    """Device information dictionary."""
+
+    index: int
+    vendor_name: str
+    model_name: str
+    sn: str
+    display_name: str
+    device_id: str
+    user_id: str
+    access_status: int
+    device_class: int
+    mac: str
+    ip: str
+    subnet_mask: str
+    gateway: str
+    nic_mac: str
+    nic_ip: str
+    nic_subnet_mask: str
+    nic_gateWay: str
+    nic_description: str
+
+
 class DeviceManager:
     __instance_num = 0
 
-    def set_log_type(self, log_type):
-        """
+    def __new__(
+        cls,
+    ) -> DeviceManager:
+        cls.__instance_num += 1
+        status = gx.gx_init_lib()
+        check_return_status(status, "DeviceManager", "init_lib")
+        return object.__new__(cls)
+
+    def __init__(self) -> None:
+        self.__device_num = 0
+        self.__device_info_list: list[DeviceInfo] = []
+        self.__interface_info_list: list[InterfaceInfo] = []
+        self.__interface_num = 0
+
+    def __del__(self) -> None:
+        self.__class__.__instance_num -= 1
+        if self.__class__.__instance_num <= 0:
+            status = gx.gx_close_lib()
+            check_return_status(status, "DeviceManager", "close_lib")
+
+    def set_log_type(self, log_type: int) -> None:
+        """Set whether logs of the specified type can be sent.
+
+        Parameters
+        ----------
+        log_type : int
+            Log type, see details in GxLogTypeList.
+
         :brief      Set whether logs of the specified type can be sent
         :param      log_type:   log type,See detail in GxLogTypeList
         :return:    status:     State return value, See detail in GxStatusList
@@ -32,7 +96,7 @@ class DeviceManager:
         status = gx.gx_set_log_type(log_type)
         check_return_status(status, "DeviceManager", "set_log_type")
 
-    def get_log_type(self):
+    def get_log_type(self) -> int:
         """
         :brief      Gets whether logs of the specified type can be sent
         :return:    status:      State return value, See detail in GxStatusList
@@ -44,25 +108,7 @@ class DeviceManager:
 
         return self.__log_type
 
-    def __new__(cls, *args, **kw):
-        cls.__instance_num += 1
-        status = gx.gx_init_lib()
-        check_return_status(status, "DeviceManager", "init_lib")
-        return object.__new__(cls, *args)
-
-    def __init__(self):
-        self.__device_num = 0
-        self.__device_info_list = []
-        self.__interface_info_list = []
-        self.__interface_num = 0
-
-    def __del__(self):
-        self.__class__.__instance_num -= 1
-        if self.__class__.__instance_num <= 0:
-            status = gx.gx_close_lib()
-            check_return_status(status, "DeviceManager", "close_lib")
-
-    def __create_device(self, device_class, device_handle):
+    def __create_device(self, device_class: int, device_handle: int) -> Device | U2Device | U3VDevice | GEVDevice:
         status, interface_handle = gx.gx_get_parent_interface_from_device(device_handle)
         check_return_status(status, "DeviceManager", "__create_device")
 
@@ -97,7 +143,12 @@ class DeviceManager:
                 "DeviceManager.__create_device: Does not support this device type."
             )
 
-    def __get_device_info_list(self, base_info: list[gx.GxDeviceBaseInfo], ip_info: list[gx.GxDeviceIPInfo], num: int) -> list[dict[str, Any]]:
+    def __get_device_info_list(
+        self,
+        base_info: list[gx.GxDeviceBaseInfo],
+        ip_info: list[gx.GxDeviceIPInfo],
+        num: int,
+    ) -> list[DeviceInfo]:
         """
         :brief      Convert GxDeviceBaseInfo and gx.GxDeviceIPInfo to device info list
         :param      base_info:  device base info list[GxDeviceBaseInfo]
@@ -105,7 +156,7 @@ class DeviceManager:
         :param      num:        device number
         :return:    device info list
         """
-        device_info_list = []
+        device_info_list: list[DeviceInfo] = []
         for i in range(num):
             device_info_list.append(
                 {
@@ -132,7 +183,7 @@ class DeviceManager:
 
         return device_info_list
 
-    def __get_interface_info_list(self):
+    def __get_interface_info_list(self) -> tuple[int, list[InterfaceInfo]]:
         """
         :brief      Get GXInterfaceInfo and Convert GXInterfaceInfo to interface info list
         :return:    interface info list
@@ -140,17 +191,13 @@ class DeviceManager:
         status, interface_number = gx.gx_get_interface_number()
         check_return_status(status, "DeviceManager", "__get_interface_info_list")
 
-        interface_info_list = []
+        interface_info_list: list[InterfaceInfo] = []
         for nindex in range(interface_number):
             status, interface_info = gx.gx_get_interface_info(nindex + 1)
-            check_return_status(
-                status, "DeviceManager", "__get_interface_info_list"
-            )
+            check_return_status(status, "DeviceManager", "__get_interface_info_list")
 
             status, interface_handle = gx.gx_get_interface_handle(nindex + 1)
-            check_return_status(
-                status, "DeviceManager", "__get_interface_info_list"
-            )
+            check_return_status(status, "DeviceManager", "__get_interface_info_list")
 
             if GxTLClassList.TL_TYPE_CXP == interface_info.TLayer_type:
                 interface_info_list.append(
@@ -247,7 +294,7 @@ class DeviceManager:
                     {
                         "handle": 0,
                         "type": GxTLClassList.TL_TYPE_UNKNOWN,
-                        "display_name": gx.string_decoding(""),
+                        "display_name": "unknown",
                         "interface_id": "",
                         "serial_number": "",
                         "description": "",
@@ -273,12 +320,22 @@ class DeviceManager:
 
         return ip_info_list
 
-    def update_device_list(self, timeout=200):
-        """
-        :brief      enumerate the same network segment devices
-        :param      timeout:    Enumeration timeout, range:[0, 0xFFFFFFFF]
-        :return:    dev_num:    device number
-                    device_info_list: all device info list
+    def update_device_list(self, timeout: int = 200) -> tuple[int, list[DeviceInfo]]:
+        """Enumerate the devices on the same network segment.
+
+        Parameters
+        ----------
+        timeout : int, optional
+            Timeout for API request in milliseconds. Default is 200 ms.
+
+        Returns
+        -------
+        tuple[int, list[dict[str, Any]]]
+            A tuple containing:
+            - `int`: The number of devices found (0 if none found).
+            - `list[dict[str, Any]]`: List of dictionaries with device information
+              (empty list if no devices found).
+
         """
         if not isinstance(timeout, int):
             raise ParameterTypeError(
@@ -292,7 +349,7 @@ class DeviceManager:
                 "timeout out of bounds, timeout: minimum=0, maximum=%s"
                 % hex(UNSIGNED_INT_MAX).__str__()
             )
-            return 0, None
+            return 0, []
 
         status, dev_num = gx.gx_update_device_list(timeout)
         check_return_status(status, "DeviceManager", "update_device_list")
@@ -312,13 +369,25 @@ class DeviceManager:
 
         return self.__device_num, self.__device_info_list
 
-    def update_device_list_ex(self, tl_type, timeout=2000):
-        """
-        :brief      Enumerate the device_type type devices
-        :param      tl_type:device type
-        :param      timeout:    Enumeration timeout, range:[0, 0xFFFFFFFF]
-        :return:    dev_num:    device number
-                    device_info_list: all device info list
+    def update_device_list_ex(
+        self, tl_type: int, timeout=2000
+    ) -> tuple[int, list[DeviceInfo]]:
+        """ Enumerate the available devices of the specified type.
+
+        Parameters
+        ----------
+        tl_type : int
+            The type of device to enumerate, see details in GxTLClassList.
+        timeout : int, optional
+            Timeout for API request in milliseconds. Default is 2000 ms.
+
+        Returns
+        -------
+        tuple[int, list[DeviceInfo]]
+            A tuple containing:
+            - `int`: The number of devices found (0 if none found).
+            - `list[DeviceInfo]`: List of dictionaries with device information
+                (empty list if no devices found).
         """
         if not isinstance(timeout, int):
             raise ParameterTypeError(
@@ -332,7 +401,7 @@ class DeviceManager:
                 "timeout out of bounds, timeout: minimum=0, maximum=%s"
                 % hex(UNSIGNED_INT_MAX).__str__()
             )
-            return 0, None
+            return 0, []
 
         status, dev_num = gx.gx_update_device_list_ex(tl_type, timeout)
         check_return_status(status, "DeviceManager", "update_device_list_ex")
@@ -352,8 +421,14 @@ class DeviceManager:
 
         return self.__device_num, self.__device_info_list
 
-    def update_all_device_list(self, timeout=200):
-        """
+    def update_all_device_list(self, timeout: int=200) -> tuple[int, list[DeviceInfo]]:
+        """Enumerate devices on different network segments.
+
+        Parameters
+        ----------
+        timeout : int, optional
+            Timeout for API request in milliseconds. Default is 200 ms.
+
         :brief      Enumerate devices on different network segments
         :param      timeout:    Enumeration timeout, range:[0, 0xFFFFFFFF]
         :return:    dev_num:    device number
@@ -371,7 +446,7 @@ class DeviceManager:
                 "timeout out of bounds, timeout: minimum=0, maximum=%s"
                 % hex(UNSIGNED_INT_MAX).__str__()
             )
-            return 0, None
+            return 0, []
 
         status, dev_num = gx.gx_update_all_device_list(timeout)
         check_return_status(status, "DeviceManager", "update_all_device_list")
@@ -391,24 +466,33 @@ class DeviceManager:
 
         return self.__device_num, self.__device_info_list
 
-    def get_interface_number(self):
+    def get_interface_number(self) -> int:
         """
         :brief      Get device number
         :return:    device number
         """
         return self.__interface_num
 
-    def get_interface_info(self):
+    def get_interface_info(self) -> list[InterfaceInfo]:
         """
         :brief      Get device number
         :return:    device number
         """
         return self.__interface_info_list
 
-    def get_interface(self, index):
-        """
-        :brief      Get device number
-        :return:    device number
+    def get_interface(self, index: int) -> Interface | None:
+        """Get the device interface by index.
+
+        Parameters
+        ----------
+        index : int
+            The index of the interface to retrieve.
+            Must be a non-zero, positive integer.
+        
+        Returns
+        -------
+        Interface | None
+            An Interface object if found, or None if the index is invalid.
         """
         if not isinstance(index, int):
             raise ParameterTypeError(
@@ -437,7 +521,7 @@ class DeviceManager:
 
         return Interface(interface_handle, self.__interface_info_list[index - 1])
 
-    def get_device_number(self):
+    def get_device_number(self) -> int:
         """
         :brief      Get device number
         :return:    device number
@@ -451,8 +535,18 @@ class DeviceManager:
         """
         return self.__device_info_list
 
-    def open_device_by_index(self, index, access_mode=GxAccessMode.CONTROL):
-        """
+    def open_device_by_index(self, index: int, access_mode: int = GxAccessMode.CONTROL) -> Device | None:
+        """Open a new device by index.
+
+        Parameters
+        ----------
+        index : int
+            The index of the device to open.
+            Must be a non-zero, positive integer.
+        access_mode : int, optional
+            The access mode for opening the device. See GxAccessMode for details.
+            Default is GxAccessMode.CONTROL.
+
         :brief      open device by index
                     USB3 device return U3VDevice object
                     USB2 device return U2Device object
@@ -733,7 +827,7 @@ class DeviceManager:
 
         # open device by ip
         open_param = gx.GxOpenParam()
-        open_param.content = mac.encode('utf-8')
+        open_param.content = mac.encode("utf-8")
         open_param.open_mode = gx.GxOpenMode.MAC
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)

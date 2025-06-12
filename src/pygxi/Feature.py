@@ -252,7 +252,9 @@ class EnumFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            raise NotImplementedError("%s.get_range: is not support" % self.feature_name)
+            raise NotImplementedError(
+                "%s.get_range: is not support" % self.feature_name
+            )
 
         status, enum_num = gx.gx_get_enum_entry_nums(self.__handle, self.__feature)
         check_return_status(status, "EnumFeature", "get_range")
@@ -457,7 +459,9 @@ class BufferFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            raise InvalidAccessError("%s.get_buffer is not readable" % self.feature_name)
+            raise InvalidAccessError(
+                "%s.get_buffer is not readable" % self.feature_name
+            )
 
         status, buf = gx.gx_get_buffer(self.__handle, self.__feature)
         check_return_status(status, "BuffFeature", "get_buffer")
@@ -477,7 +481,9 @@ class BufferFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            raise InvalidAccessError("%s.set_buffer is not writeable" % self.feature_name)
+            raise InvalidAccessError(
+                "%s.set_buffer is not writeable" % self.feature_name
+            )
 
         max_length = self.get_buffer_length()
         if buf.get_length() > max_length:
@@ -510,7 +516,9 @@ class CommandFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            raise NotImplementedError("%s.send_command is not support" % self.feature_name)
+            raise NotImplementedError(
+                "%s.send_command is not support" % self.feature_name
+            )
 
         status = gx.gx_send_command(self.__handle, self.__feature)
         check_return_status(status, "CommandFeature", "send_command")

@@ -1514,9 +1514,7 @@ class Device:
         status = gx.gx_set_write_remote_device_port_stacked(
             self.__dev_handle, entries, size
         )
-        check_return_status(
-            status, "Device", "set_write_remote_device_port_stacked"
-        )
+        check_return_status(status, "Device", "set_write_remote_device_port_stacked")
 
     def create_image_process_config(self):
         """

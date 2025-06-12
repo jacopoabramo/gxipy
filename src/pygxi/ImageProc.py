@@ -920,7 +920,9 @@ class RawImage:
         :return     RAWImage object
         """
         if self.frame_data.pixel_format & PIXEL_BIT_MASK != GX_PIXEL_8BIT:
-            raise InvalidParameterError("RawImage.raw8_rotate_90_cw only support 8bit image")
+            raise InvalidParameterError(
+                "RawImage.raw8_rotate_90_cw only support 8bit image"
+            )
 
         frame_data = GxFrameData()
         frame_data.status = self.frame_data.status

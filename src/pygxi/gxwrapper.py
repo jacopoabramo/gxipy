@@ -20,7 +20,6 @@ if sys.platform == "linux2" or sys.platform == "linux":
     except OSError:
         print("Cannot find libgxiapi.so.")
 else:
-
     try:
         env_dist = os.environ
         GeniCam_AddPath32 = str(env_dist["GALAXY_GENICAM_ROOT"]) + r"\bin\Win32_i86"
@@ -1155,7 +1154,7 @@ if hasattr(dll, "GXCloseLib"):
 
 if hasattr(dll, "GXGetLastError"):
 
-    def gx_get_last_error(size: int =1024) -> tuple[GxStatusList, int, str]:
+    def gx_get_last_error(size: int = 1024) -> tuple[GxStatusList, int, str]:
         """Get the last error code and description.
 
         Parameters
@@ -1187,60 +1186,58 @@ if hasattr(dll, "GXGetLastError"):
 
 if hasattr(dll, "GXUpdateDeviceList"):
 
-    def gx_update_device_list(time_out=200):
+    def gx_update_device_list(timeout: int = 200) -> tuple[int, int]:
         """
         :brief      Enumerating currently all available devices in subnet and gets the number of devices.
-        :param      time_out:           The timeout time of enumeration (unit: ms).
+        :param      timeout:           The timeout time of enumeration (unit: ms).
                                         Type: Int, Minimum:0
         :return:    status:             State return value, See detail in GxStatusList
                     device_num:         The number of devices
         """
-        time_out_c = ct.c_uint()
-        time_out_c.value = time_out
+        timeout_c = ct.c_uint(timeout)
 
         device_num = ct.c_uint()
-        status = dll.GXUpdateDeviceList(ct.byref(device_num), time_out_c)
+        status = dll.GXUpdateDeviceList(ct.byref(device_num), timeout_c)
         return status, device_num.value
 
 
 if hasattr(dll, "GXUpdateAllDeviceList"):
 
-    def gx_update_all_device_list(time_out=200):
+    def gx_update_all_device_list(timeout=200):
         """
         :brief      Enumerating currently all available devices in entire network and gets the number of devices
-        :param      time_out:           The timeout time of enumeration (unit: ms).
+        :param      timeout:           The timeout time of enumeration (unit: ms).
                                         Type: Int, Minimum: 0
         :return:    status:             State return value, See detail in GxStatusList
                     device_num:         The number of devices
         """
-        time_out_c = ct.c_uint()
-        time_out_c.value = time_out
+        timeout_c = ct.c_uint()
+        timeout_c.value = timeout
 
         device_num = ct.c_uint()
-        status = dll.GXUpdateAllDeviceList(ct.byref(device_num), time_out_c)
+        status = dll.GXUpdateAllDeviceList(ct.byref(device_num), timeout_c)
         return status, device_num.value
 
 
 if hasattr(dll, "GXUpdateAllDeviceListEx"):
 
-    def gx_update_device_list_ex(device_type, time_out=2000):
+    def gx_update_device_list_ex(
+        device_type: int, timeout: int = 2000
+    ) -> tuple[int, int]:
         """
         :brief      Enumerating all available ntype type devices.
         :param      ntype:              enumerat ntype type device
-        :param      time_out:           The timeout time of enumeration (unit: ms).
+        :param      timeout:           The timeout time of enumeration (unit: ms).
                                         Type: Int, Minimum:0
         :return:    status:             State return value, See detail in GxStatusList
                     device_num:         The number of devices
         """
-        device_type_c = ct.c_uint()
-        device_type_c.value = device_type
-
-        time_out_c = ct.c_uint()
-        time_out_c.value = time_out
+        device_type_c = ct.c_uint(device_type)
+        timeout_c = ct.c_uint(timeout)
 
         device_num = ct.c_uint()
         status = dll.GXUpdateAllDeviceListEx(
-            device_type_c, ct.byref(device_num), time_out_c
+            device_type_c, ct.byref(device_num), timeout_c
         )
         return status, device_num.value
 
@@ -1298,7 +1295,7 @@ if hasattr(dll, "GXGetInterfaceHandle"):
 
 if hasattr(dll, "GXGetAllDeviceBaseInfo"):
 
-    def gx_get_all_device_base_info(devices_num):
+    def gx_get_all_device_base_info(devices_num: int) -> tuple[int, list[GxDeviceBaseInfo]]:
         """
         :brief      To get the basic information of all the devices
         :param      devices_num:        The number of devices
@@ -1306,7 +1303,7 @@ if hasattr(dll, "GXGetAllDeviceBaseInfo"):
         :return:    status:             State return value, See detail in GxStatusList
                     device_ip_info:     The structure pointer of the device information(GxDeviceIPInfo)
         """
-        devices_info = (GxDeviceBaseInfo * devices_num)()
+        devices_info: ct.Array[GxDeviceBaseInfo] = (GxDeviceBaseInfo * devices_num)()
 
         buf_size_c = ct.c_size_t()
         buf_size_c.value = ct.sizeof(GxDeviceBaseInfo) * devices_num
@@ -1387,37 +1384,31 @@ if hasattr(dll, "GXCloseDevice"):
 
 if hasattr(dll, "GXGetParentInterfaceFromDev"):
 
-    def gx_get_parent_interface_from_device(handle):
+    def gx_get_parent_interface_from_device(handle: int) -> tuple[int, int | None]:
         """
         :brief      Specify the device handle to close the device
         :param      handle:     The device handle that the user specified to close.
                                 Type: Long, Greater than 0
         :return:    status:     State return value, See detail in GxStatusList
         """
-        handle_c = ct.c_void_p()
-        handle_c.value = handle
-
+        handle_c = ct.c_void_p(handle)
         interface_handle_c = ct.c_void_p()
-
-        status = dll.GXGetParentInterfaceFromDev(handle_c, ct.byref(interface_handle_c))
+        status: int = dll.GXGetParentInterfaceFromDev(handle_c, ct.byref(interface_handle_c))
         return status, interface_handle_c.value
 
 
 if hasattr(dll, "GXGetLocalDeviceHandleFromDev"):
 
-    def gx_local_device_handle_from_device(handle):
+    def gx_local_device_handle_from_device(handle: int) -> tuple[int, int | None]:
         """
         :brief      Get device local layer handle
         :param      handle:     The device handle
         :return:    status:     State return value, See detail in GxStatusList
                                 device local layer handle
         """
-        handle_c = ct.c_void_p()
-        handle_c.value = handle
-
+        handle_c = ct.c_void_p(handle)
         local_device_handle_c = ct.c_void_p()
-
-        status = dll.GXGetLocalDeviceHandleFromDev(
+        status: int = dll.GXGetLocalDeviceHandleFromDev(
             handle_c, ct.byref(local_device_handle_c)
         )
         return status, local_device_handle_c.value
@@ -1493,7 +1484,7 @@ if hasattr(dll, "GXFeatureSave"):
         """
         handle_c = ct.c_void_p()
         handle_c.value = handle
-        file_path_c = ct.create_string_buffer(file_path.encode('utf-8'))
+        file_path_c = ct.create_string_buffer(file_path.encode("utf-8"))
 
         status = dll.GXFeatureSave(handle_c, file_path_c)
         return status
@@ -1513,7 +1504,7 @@ if hasattr(dll, "GXFeatureLoad"):
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        file_path_c = ct.create_string_buffer(file_path.encode('utf-8'))
+        file_path_c = ct.create_string_buffer(file_path.encode("utf-8"))
 
         b_verify_c = ct.c_bool()
         b_verify_c.value = b_verify
@@ -1537,7 +1528,7 @@ if hasattr(dll, "GXGetNodeAccessMode"):
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
 
         node_access_mode_c = ct.c_int()
         node_access_mode_c.value = GxNodeAccessMode.MODE_UNDEF
@@ -1550,7 +1541,9 @@ if hasattr(dll, "GXGetNodeAccessMode"):
 
 if hasattr(dll, "GXGetIntValue"):
 
-    def gx_get_int_feature(handle, feature_name: str) -> tuple[GxStatusList, GxIntFeatrue]:
+    def gx_get_int_feature(
+        handle, feature_name: str
+    ) -> tuple[GxStatusList, GxIntFeatrue]:
         """
         :brief      Get int type feature value
         :param      handle:     The handle of the device each layer.
@@ -1563,7 +1556,7 @@ if hasattr(dll, "GXGetIntValue"):
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
 
         int_feature_c = GxIntFeatrue()
 
@@ -1587,7 +1580,7 @@ if hasattr(dll, "GXSetIntValue"):
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
 
         feature_value_c = ct.c_int64()
         feature_value_c.value = feature_value
@@ -1611,7 +1604,7 @@ if hasattr(dll, "GXGetEnumValue"):
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
 
         enum_feature_c = GxEnumFeatrue()
 
@@ -1635,7 +1628,7 @@ if hasattr(dll, "GXSetEnumValue"):
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
 
         feature_value_c = ct.c_int64()
         feature_value_c.value = feature_value
@@ -1646,7 +1639,9 @@ if hasattr(dll, "GXSetEnumValue"):
 
 if hasattr(dll, "GXSetEnumValueByString"):
 
-    def gx_set_enum_feature_value_string(handle, feature_name: str, feature_value: str) -> GxStatusList:
+    def gx_set_enum_feature_value_string(
+        handle, feature_name: str, feature_value: str
+    ) -> GxStatusList:
         """
         :brief      Set enum type feature value
         :param      handle:     The handle of the device each layer.
@@ -1660,8 +1655,8 @@ if hasattr(dll, "GXSetEnumValueByString"):
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
-        feature_value_c = ct.create_string_buffer(feature_value.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
+        feature_value_c = ct.create_string_buffer(feature_value.encode("utf-8"))
 
         status = dll.GXSetEnumValueByString(handle_c, feature_name_c, feature_value_c)
         return status
@@ -1669,7 +1664,9 @@ if hasattr(dll, "GXSetEnumValueByString"):
 
 if hasattr(dll, "GXGetFloatValue"):
 
-    def gx_get_float_feature(handle, feature_name: str) -> tuple[GxStatusList, GxFloatFeature]:
+    def gx_get_float_feature(
+        handle, feature_name: str
+    ) -> tuple[GxStatusList, GxFloatFeature]:
         """
         :brief      Get float type feature value
         :param      handle:     The handle of the device each layer.
@@ -1692,7 +1689,9 @@ if hasattr(dll, "GXGetFloatValue"):
 
 if hasattr(dll, "GXSetFloatValue"):
 
-    def gx_set_float_feature_value(handle: int, feature_name: str, feature_value: float) -> GxStatusList:
+    def gx_set_float_feature_value(
+        handle: int, feature_name: str, feature_value: float
+    ) -> GxStatusList:
         """
         :brief      Set float type feature value
         :param      handle:     The handle of the device each layer.
@@ -1704,7 +1703,7 @@ if hasattr(dll, "GXSetFloatValue"):
         :return:    status:     State return value
         """
         handle_c = ct.c_void_p(handle)
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
         feature_value_c = ct.c_double(feature_value)
 
         status = dll.GXSetFloatValue(handle_c, feature_name_c, feature_value_c)
@@ -1713,7 +1712,9 @@ if hasattr(dll, "GXSetFloatValue"):
 
 if hasattr(dll, "GXGetBoolValue"):
 
-    def gx_get_bool_feature(handle: int, feature_name: str) -> tuple[GxStatusList, bool]:
+    def gx_get_bool_feature(
+        handle: int, feature_name: str
+    ) -> tuple[GxStatusList, bool]:
         """
         :brief      Get bool type feature value
         :param      handle:     The handle of the device each layer.
@@ -1724,7 +1725,7 @@ if hasattr(dll, "GXGetBoolValue"):
                                 bool value
         """
         handle_c = ct.c_void_p(handle)
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
         bool_feature_c = ct.c_bool()
 
         status = dll.GXGetBoolValue(handle_c, feature_name_c, ct.byref(bool_feature_c))
@@ -1733,7 +1734,9 @@ if hasattr(dll, "GXGetBoolValue"):
 
 if hasattr(dll, "GXSetBoolValue"):
 
-    def gx_set_bool_feature_value(handle: int, feature_name: str, feature_value: bool) -> GxStatusList:
+    def gx_set_bool_feature_value(
+        handle: int, feature_name: str, feature_value: bool
+    ) -> GxStatusList:
         """
         :brief      Set bool type feature value
         :param      handle:     The handle of the device each layer.
@@ -1746,7 +1749,7 @@ if hasattr(dll, "GXSetBoolValue"):
         """
         handle_c = ct.c_void_p()
         handle_c.value = handle
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
         feature_value_c = ct.c_bool(feature_value)
 
         status = dll.GXSetBoolValue(handle_c, feature_name_c, feature_value_c)
@@ -1755,7 +1758,9 @@ if hasattr(dll, "GXSetBoolValue"):
 
 if hasattr(dll, "GXGetStringValue"):
 
-    def gx_get_string_feature(handle: int, feature_name: str) -> tuple[GxStatusList, GxStringFeature]:
+    def gx_get_string_feature(
+        handle: int, feature_name: str
+    ) -> tuple[GxStatusList, GxStringFeature]:
         """
         :brief      Get string type feature info
         :param      handle:     The handle of the device each layer.
@@ -1767,7 +1772,7 @@ if hasattr(dll, "GXGetStringValue"):
         """
         handle_c = ct.c_void_p(handle)
         handle_c.value = handle
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
         string_feature_c = GxStringFeature()
 
         status = dll.GXGetStringValue(
@@ -1778,7 +1783,9 @@ if hasattr(dll, "GXGetStringValue"):
 
 if hasattr(dll, "GXSetStringValue"):
 
-    def gx_set_string_feature_value(handle: int, feature_name: str, feature_value: str) -> GxStatusList:
+    def gx_set_string_feature_value(
+        handle: int, feature_name: str, feature_value: str
+    ) -> GxStatusList:
         """
         :brief      Set string type feature value
         :param      handle:     The handle of the device each layer.
@@ -1791,8 +1798,8 @@ if hasattr(dll, "GXSetStringValue"):
         """
         handle_c = ct.c_void_p(handle)
         handle_c.value = handle
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
-        feature_value_c = ct.create_string_buffer(feature_value.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
+        feature_value_c = ct.create_string_buffer(feature_value.encode("utf-8"))
 
         status = dll.GXSetStringValue(handle_c, feature_name_c, feature_value_c)
         return status
@@ -1811,7 +1818,7 @@ if hasattr(dll, "GXSetCommandValue"):
         """
         handle_c = ct.c_void_p()
         handle_c.value = handle
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
 
         status = dll.GXSetCommandValue(handle_c, feature_name_c)
         return status
@@ -1819,7 +1826,9 @@ if hasattr(dll, "GXSetCommandValue"):
 
 if hasattr(dll, "GXGetRegisterLength"):
 
-    def gx_get_register_feature_length(handle: int, feature_name: str) -> tuple[GxStatusList, int]:
+    def gx_get_register_feature_length(
+        handle: int, feature_name: str
+    ) -> tuple[GxStatusList, int]:
         """
         :brief      Get register type feature length
         :param      handle:     The handle of the device each layer.
@@ -1830,7 +1839,7 @@ if hasattr(dll, "GXGetRegisterLength"):
                                 Feature length
         """
         handle_c = ct.c_void_p(handle)
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
         feature_value_c = ct.c_size_t()
 
         status = dll.GXGetRegisterLength(
@@ -1841,7 +1850,9 @@ if hasattr(dll, "GXGetRegisterLength"):
 
 if hasattr(dll, "GXGetRegisterValue"):
 
-    def gx_get_register_feature_value(handle: int, feature_name: str) -> tuple[GxStatusList, ct.Array]:
+    def gx_get_register_feature_value(
+        handle: int, feature_name: str
+    ) -> tuple[GxStatusList, ct.Array]:
         """
         :brief      Specify the device handle to close the device
         :param      handle:     The handle of the device each layer.
@@ -1853,7 +1864,7 @@ if hasattr(dll, "GXGetRegisterValue"):
         """
         handle_c = ct.c_void_p()
         handle_c.value = handle
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
 
         feature_size_c = ct.c_size_t()
         status = dll.GXGetRegisterValue(
@@ -1870,7 +1881,9 @@ if hasattr(dll, "GXGetRegisterValue"):
 
 if hasattr(dll, "GXSetRegisterValue"):
 
-    def gx_set_register_feature_value(handle: int, feature_name: str, buff: Any, buff_size: int) -> GxStatusList:
+    def gx_set_register_feature_value(
+        handle: int, feature_name: str, buff: Any, buff_size: int
+    ) -> GxStatusList:
         """
         :brief      Specify the device handle to close the device
         :param      handle:     The handle of the device each layer.
@@ -1884,7 +1897,7 @@ if hasattr(dll, "GXSetRegisterValue"):
         :return:    status:     State return value, See detail in GxStatusList
         """
         handle_c = ct.c_void_p(handle)
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
 
         feature_value_c = ct.c_int64(buff_size)
 
@@ -1894,7 +1907,7 @@ if hasattr(dll, "GXSetRegisterValue"):
 
 if hasattr(dll, "GXFeatureLoad"):
 
-    def gx_feature_load(handle: int, file_path: str, verify: bool) -> GxStatusList: # type: ignore
+    def gx_feature_load(handle: int, file_path: str, verify: bool) -> GxStatusList:  # type: ignore
         """
         :brief      Specify the device handle to close the device
         :param      handle:     The handle of the device each layer.
@@ -1904,7 +1917,7 @@ if hasattr(dll, "GXFeatureLoad"):
         :return:    status:     State return value, See detail in GxStatusList
         """
         handle_c = ct.c_void_p(handle)
-        file_path_c = ct.create_string_buffer(file_path.encode('utf-8'))
+        file_path_c = ct.create_string_buffer(file_path.encode("utf-8"))
         verify_c = ct.c_bool(verify)
 
         status = dll.GXFeatureLoad(handle_c, file_path_c, verify_c)
@@ -1913,7 +1926,7 @@ if hasattr(dll, "GXFeatureLoad"):
 
 if hasattr(dll, "GXFeatureSave"):
 
-    def gx_feature_save(handle: int, file_path: str) -> GxStatusList: # type: ignore
+    def gx_feature_save(handle: int, file_path: str) -> GxStatusList:  # type: ignore
         """
         :brief      Specify the device handle to close the device
         :param      handle:     The handle of the device each layer.
@@ -1923,7 +1936,7 @@ if hasattr(dll, "GXFeatureSave"):
         :return:    status:     State return value, See detail in GxStatusList
         """
         handle_c = ct.c_void_p(handle)
-        file_path_c = ct.create_string_buffer(file_path.encode('utf-8'))
+        file_path_c = ct.create_string_buffer(file_path.encode("utf-8"))
         status = dll.GXFeatureSave(handle_c, file_path_c)
         return status
 
@@ -2032,7 +2045,9 @@ if hasattr(dll, "GXWritePortStacked"):
 FEATURE_CALL = ct.CFUNCTYPE(None, ct.c_char_p, ct.py_object)
 if hasattr(dll, "GXRegisterFeatureCallbackByString"):
 
-    def gx_register_feature_call_back_by_string(handle: int, call_back: Any, feature_name: str, args: Any) -> tuple[GxStatusList, int]:
+    def gx_register_feature_call_back_by_string(
+        handle: int, call_back: Any, feature_name: str, args: Any
+    ) -> tuple[GxStatusList, int]:
         """
         :brief      Specify the device handle to close the device
         :param      handle:     The handle of the device each layer.
@@ -2045,7 +2060,7 @@ if hasattr(dll, "GXRegisterFeatureCallbackByString"):
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
 
         call_back_handle = ct.c_void_p()
 
@@ -2056,7 +2071,7 @@ if hasattr(dll, "GXRegisterFeatureCallbackByString"):
             feature_name_c,
             ct.byref(call_back_handle),
         )
-        return status, call_back_handle.value # type: ignore
+        return status, call_back_handle.value  # type: ignore
 
 
 if hasattr(dll, "GXUnregisterFeatureCallbackByString"):
@@ -2073,7 +2088,7 @@ if hasattr(dll, "GXUnregisterFeatureCallbackByString"):
         :return:    status:     State return value
         """
         handle_c = ct.c_void_p(handle)
-        feature_name_c = ct.create_string_buffer(feature_name.encode('utf-8'))
+        feature_name_c = ct.create_string_buffer(feature_name.encode("utf-8"))
         call_back_handle_c = ct.c_void_p(call_back_handle)
 
         status = dll.GXUnregisterFeatureCallbackByString(
@@ -2085,7 +2100,10 @@ if hasattr(dll, "GXUnregisterFeatureCallbackByString"):
 if hasattr(dll, "GXGetDevicePersistentIpAddress"):
 
     def gx_get_device_persistent_ip_address(
-        handle: int, ip_length:int=16, subnet_mask_length:int=16, default_gateway_length:int=16
+        handle: int,
+        ip_length: int = 16,
+        subnet_mask_length: int = 16,
+        default_gateway_length: int = 16,
     ) -> tuple[GxStatusList, str, str, str]:
         """
         :brief      Get the persistent IP information of the device
@@ -2127,15 +2145,17 @@ if hasattr(dll, "GXGetDevicePersistentIpAddress"):
 
         return (
             status,
-            ip.decode('utf-8'),
-            subnet_mask.decode('utf-8'),
-            default_gateway.decode('utf-8'),
+            ip.decode("utf-8"),
+            subnet_mask.decode("utf-8"),
+            default_gateway.decode("utf-8"),
         )
 
 
 if hasattr(dll, "GXSetDevicePersistentIpAddress"):
 
-    def gx_set_device_persistent_ip_address(handle: int, ip: str, subnet_mask: str, default_gate_way: str) -> GxStatusList:
+    def gx_set_device_persistent_ip_address(
+        handle: int, ip: str, subnet_mask: str, default_gate_way: str
+    ) -> GxStatusList:
         """
         :brief      Set the persistent IP information of the device
         :param      handle:             The handle of the device
@@ -2145,9 +2165,9 @@ if hasattr(dll, "GXSetDevicePersistentIpAddress"):
         :return:    status:             State return value, See detail in GxStatusList
         """
         handle_c = ct.c_void_p(handle)
-        ip_c = ct.create_string_buffer(ip.encode('utf-8'))
-        subnet_mask_c = ct.create_string_buffer(subnet_mask.encode('utf-8'))
-        default_gate_way_c = ct.create_string_buffer(default_gate_way.encode('utf-8'))
+        ip_c = ct.create_string_buffer(ip.encode("utf-8"))
+        subnet_mask_c = ct.create_string_buffer(subnet_mask.encode("utf-8"))
+        default_gate_way_c = ct.create_string_buffer(default_gate_way.encode("utf-8"))
 
         status = dll.GXSetDevicePersistentIpAddress(
             handle_c,
@@ -2182,7 +2202,7 @@ if hasattr(dll, "GXGetFeatureName"):
         )
 
         name = ct.string_at(name_buff, size_c.value - 1)
-        return status, name.decode('utf-8')
+        return status, name.decode("utf-8")
 
 
 if hasattr(dll, "GXIsImplemented"):
@@ -2250,7 +2270,9 @@ if hasattr(dll, "GXIsWritable"):
 
 if hasattr(dll, "GXGetIntRange"):
 
-    def gx_get_int_range(handle: int, feature_id: int) -> tuple[GxStatusList, GxIntRange]:
+    def gx_get_int_range(
+        handle: int, feature_id: int
+    ) -> tuple[GxStatusList, GxIntRange]:
         """
         :brief      To get the minimum value, maximum value and steps of the int type
         :param      handle:         The handle of the device.
@@ -2635,7 +2657,7 @@ if hasattr(dll, "GXSetString"):
         """
         handle_c = ct.c_void_p(handle)
         feature_id_c = ct.c_int(feature_id)
-        content_c = ct.create_string_buffer(content.encode('utf-8'))
+        content_c = ct.create_string_buffer(content.encode("utf-8"))
         status = dll.GXSetString(handle_c, feature_id_c, ct.byref(content_c))
         return status
 
@@ -2776,7 +2798,7 @@ if hasattr(dll, "GXUnregisterCaptureCallback"):
 
 if hasattr(dll, "GXGetImage"):
 
-    def gx_get_image(handle, frame_data, time_out=200):
+    def gx_get_image(handle, frame_data, timeout=200):
         """
         :brief      After starting acquisition, you can call this function to get images directly.
                     Noting that the interface can not be mixed with the callback capture mode.
@@ -2784,23 +2806,23 @@ if hasattr(dll, "GXGetImage"):
                                     Type: Long, Greater than 0
         :param      frame_data:     [out]User introduced to receive the image data
                                     Type: GxFrameData
-        :param      time_out:       The timeout time of capture image.(unit: ms)
+        :param      timeout:       The timeout time of capture image.(unit: ms)
                                     Type: int, minnum: 0
         :return:    status:         State return value, See detail in GxStatusList
         """
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        time_out_c = ct.c_uint()
-        time_out_c.value = time_out
+        timeout_c = ct.c_uint()
+        timeout_c.value = timeout
 
-        status = dll.GXGetImage(handle_c, ct.byref(frame_data), time_out_c)
+        status = dll.GXGetImage(handle_c, ct.byref(frame_data), timeout_c)
         return status
 
 
 if hasattr(dll, "GXDQBuf"):
 
-    def gx_dq_buf(handle, pp_frame_buffer, time_out=200):
+    def gx_dq_buf(handle, pp_frame_buffer, timeout=200):
         """
         :brief      After starting acquisition, you can call this function to get images directly.
                     Noting that the interface can not be mixed with the callback capture mode.
@@ -2808,15 +2830,15 @@ if hasattr(dll, "GXDQBuf"):
                                     Type: Long, Greater than 0
         :param      pp_frame_buffer:[out]User introduced to receive the image data
                                     Type: Secondary pointer
-        :param      time_out:       The timeout time of capture image.(unit: ms)
+        :param      timeout:       The timeout time of capture image.(unit: ms)
                                     Type: int, minnum: 0
         :return:    status:         State return value, See detail in GxStatusList
         """
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        time_out_c = ct.c_uint()
-        time_out_c.value = time_out
+        timeout_c = ct.c_uint()
+        timeout_c.value = timeout
 
         dll.GXDQBuf.argtypes = [
             ct.c_void_p,
@@ -2825,7 +2847,7 @@ if hasattr(dll, "GXDQBuf"):
         ]
         dll.GXDQBuf.restype = ct.c_int
 
-        status = dll.GXDQBuf(handle_c, pp_frame_buffer, time_out_c)
+        status = dll.GXDQBuf(handle_c, pp_frame_buffer, timeout_c)
         return status
 
 
@@ -3016,7 +3038,7 @@ if hasattr(dll, "GXExportConfigFile"):
         handle_c = ct.c_void_p()
         handle_c.value = handle
 
-        file_path_c = ct.create_string_buffer(file_path.encode('utf-8'))
+        file_path_c = ct.create_string_buffer(file_path.encode("utf-8"))
         status = dll.GXExportConfigFile(handle_c, ct.byref(file_path_c))
 
         return status
@@ -3024,7 +3046,9 @@ if hasattr(dll, "GXExportConfigFile"):
 
 if hasattr(dll, "GXImportConfigFile"):
 
-    def gx_import_config_file(handle: int, file_path: str, verify: bool) -> GxStatusList:
+    def gx_import_config_file(
+        handle: int, file_path: str, verify: bool
+    ) -> GxStatusList:
         """
         :brief      Import the configuration file for the camera
         :param      handle:         The handle of the device
@@ -3038,7 +3062,7 @@ if hasattr(dll, "GXImportConfigFile"):
         handle_c = ct.c_void_p(handle)
         verify_c = ct.c_bool(verify)
 
-        file_path_c = ct.create_string_buffer(file_path.encode('utf-8'))
+        file_path_c = ct.create_string_buffer(file_path.encode("utf-8"))
         status = dll.GXImportConfigFile(handle_c, ct.byref(file_path_c), verify_c)
         return status
 
@@ -3103,7 +3127,12 @@ if hasattr(dll, "GXWriteRemoteDevicePort"):
 if hasattr(dll, "GXGigEIpConfiguration"):
 
     def gx_gige_ip_configuration(
-        mac_address: str, ipconfig_flag: GxIPConfigureModeList, ip_address: str, subnet_mask: str, default_gateway: str, user_id: str
+        mac_address: str,
+        ipconfig_flag: GxIPConfigureModeList,
+        ip_address: str,
+        subnet_mask: str,
+        default_gateway: str,
+        user_id: str,
     ) -> GxStatusList:
         """
         "brief      Configure the static IP address of the camera
@@ -3115,11 +3144,11 @@ if hasattr(dll, "GXGigEIpConfiguration"):
         :param      user_id:            The user-defined name to be set(str)
         :return:    status:             State return value, See detail in GxStatusList
         """
-        mac_address_c = ct.create_string_buffer(mac_address.encode('utf-8'))
-        ip_address_c = ct.create_string_buffer(ip_address.encode('utf-8'))
-        subnet_mask_c = ct.create_string_buffer(subnet_mask.encode('utf-8'))
-        default_gateway_c = ct.create_string_buffer(default_gateway.encode('utf-8'))
-        user_id_c = ct.create_string_buffer(user_id.encode('utf-8'))
+        mac_address_c = ct.create_string_buffer(mac_address.encode("utf-8"))
+        ip_address_c = ct.create_string_buffer(ip_address.encode("utf-8"))
+        subnet_mask_c = ct.create_string_buffer(subnet_mask.encode("utf-8"))
+        default_gateway_c = ct.create_string_buffer(default_gateway.encode("utf-8"))
+        user_id_c = ct.create_string_buffer(user_id.encode("utf-8"))
 
         status = dll.GXGigEIpConfiguration(
             mac_address_c,
@@ -3134,7 +3163,9 @@ if hasattr(dll, "GXGigEIpConfiguration"):
 
 if hasattr(dll, "GXGigEForceIp"):
 
-    def gx_gige_force_ip(mac_address: str, ip_address: str, subnet_mask: str, default_gateway: str) -> GxStatusList:
+    def gx_gige_force_ip(
+        mac_address: str, ip_address: str, subnet_mask: str, default_gateway: str
+    ) -> GxStatusList:
         """
         :brief      Execute the Force IP
         :param      mac_address:        The MAC address of the device(str)
@@ -3143,10 +3174,10 @@ if hasattr(dll, "GXGigEForceIp"):
         :param      default_gate_way:   The default gateway to be set(str)
         :return:    status:             State return value, See detail in GxStatusList
         """
-        mac_address_c = ct.create_string_buffer(mac_address.encode('utf-8'))
-        ip_address_c = ct.create_string_buffer(ip_address.encode('utf-8'))
-        subnet_mask_c = ct.create_string_buffer(subnet_mask.encode('utf-8'))
-        default_gateway_c = ct.create_string_buffer(default_gateway.encode('utf-8'))
+        mac_address_c = ct.create_string_buffer(mac_address.encode("utf-8"))
+        ip_address_c = ct.create_string_buffer(ip_address.encode("utf-8"))
+        subnet_mask_c = ct.create_string_buffer(subnet_mask.encode("utf-8"))
+        default_gateway_c = ct.create_string_buffer(default_gateway.encode("utf-8"))
 
         status = dll.GXGigEForceIp(
             mac_address_c, ip_address_c, subnet_mask_c, default_gateway_c
@@ -3163,7 +3194,7 @@ if hasattr(dll, "GXGigEResetDevice"):
         :param      reset_device_mode:  Reconnection mode, refer to GxResetDeviceModeEntry
         :return:    status:             State return value, See detail in GxStatusList
         """
-        mac_address_c = ct.create_string_buffer(mac_address.encode('utf-8'))
+        mac_address_c = ct.create_string_buffer(mac_address.encode("utf-8"))
         reset_device_mode_c = ct.c_uint(reset_device_mode)
         status = dll.GXGigEResetDevice(mac_address_c, reset_device_mode_c)
         return status
@@ -3189,7 +3220,9 @@ if hasattr(dll, "GXSetAcqusitionBufferNumber"):
 
 if hasattr(dll, "GXReadRemoteDevicePortStacked"):
 
-    def gx_set_read_remote_device_port_stacked(handle: int, entries: Any, size: int) -> GxStatusList:
+    def gx_set_read_remote_device_port_stacked(
+        handle: int, entries: Any, size: int
+    ) -> GxStatusList:
         """
         :brief      Batch reads the value of the user-specified register (Registers with command values of 4 bytes only)
         :entries             [in]Batch read register addresses and values
@@ -3207,7 +3240,9 @@ if hasattr(dll, "GXReadRemoteDevicePortStacked"):
 
 if hasattr(dll, "GXWriteRemoteDevicePortStacked"):
 
-    def gx_set_write_remote_device_port_stacked(handle: int, entries: Any, size: int) -> GxStatusList:
+    def gx_set_write_remote_device_port_stacked(
+        handle: int, entries: Any, size: int
+    ) -> GxStatusList:
         """
         :brief      Batch reads the value of the user-specified register (Registers with command values of 4 bytes only)
         :entries      [in]The address and value of the batch write register
@@ -3220,6 +3255,7 @@ if hasattr(dll, "GXWriteRemoteDevicePortStacked"):
 
         status = dll.GXWriteRemoteDevicePortStacked(handle_c, entries, ct.byref(size_c))
         return status
+
 
 def array_decoding(int_array_c):
     """
@@ -3255,7 +3291,12 @@ def string_decoding(data: bytes) -> str:
     return ret
 
 
-def check_range(value: int | float, min_value: int | float, max_value: int | float, inc_value: int | float = 0) -> bool:
+def check_range(
+    value: int | float,
+    min_value: int | float,
+    max_value: int | float,
+    inc_value: int | float = 0,
+) -> bool:
     """
     :brief      Determine if the input parameter is within range
     :param      value:       input value

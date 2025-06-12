@@ -8,11 +8,14 @@ from pygxi.gxwrapper import GxStatusList
 class UnexpectedError(Exception):
     """Exception raised for unexpected errors."""
 
+
 class NoTLFoundError(Exception):
-    """ Exception raised when a Transport Layer (TL) is not found."""
+    """Exception raised when a Transport Layer (TL) is not found."""
+
 
 class DeviceNotFoundError(Exception):
     """Exception raised when a device is not found."""
+
 
 class DeviceOfflineError(Exception):
     """Exception raised when a device is offline or not connected."""
@@ -41,22 +44,25 @@ class NotEnoughMemoryError(Exception):
 class FeatureTypeError(Exception):
     """Exception raised for feature type errors."""
 
+
 class OutOfRangeError(Exception):
     """Exception raised when a parameter is out of range."""
 
+
 class APINotInitializedError(Exception):
     """Exception raised when an API is not initialized."""
+
 
 class ParameterTypeError(Exception):
     """Exception raised when a parameter type is incorrect."""
 
 
-def raise_error(status: GxStatusList, error_msg: str) -> None:
+def raise_error(status: int, error_msg: str) -> None:
     """Check the incoming status flag and raise the corresponding exception.
-    
+
     Parameters
     ----------
-    status : GxStatusList
+    status : int
         The status code returned by a function.
     error_msg : str
         The error message to be included in the exception.
