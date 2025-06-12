@@ -3,6 +3,7 @@
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
 import pygxi.gxwrapper as gx
+from typing import Any
 
 from .Device import Device, GEVDevice, U2Device, U3VDevice
 from .Exception import InvalidParameterError, DeviceNotFoundError, ParameterTypeError
@@ -13,7 +14,7 @@ from .Interface import Interface
 from .status import check_return_status
 
 
-class DeviceManager(object):
+class DeviceManager:
     __instance_num = 0
 
     def set_log_type(self, log_type):
@@ -96,7 +97,7 @@ class DeviceManager(object):
                 "DeviceManager.__create_device: Does not support this device type."
             )
 
-    def __get_device_info_list(self, base_info, ip_info, num):
+    def __get_device_info_list(self, base_info: list[gx.GxDeviceBaseInfo], ip_info: list[gx.GxDeviceIPInfo], num: int) -> list[dict[str, Any]]:
         """
         :brief      Convert GxDeviceBaseInfo and gx.GxDeviceIPInfo to device info list
         :param      base_info:  device base info list[GxDeviceBaseInfo]
