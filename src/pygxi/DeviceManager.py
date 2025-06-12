@@ -505,7 +505,7 @@ class DeviceManager:
 
         # open devices by index
         open_param = gx.GxOpenParam()
-        open_param.content = gx.string_encoding(str(index))
+        open_param.content = str(index).encode()
         open_param.open_mode = gx.GxOpenMode.INDEX
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
@@ -578,7 +578,7 @@ class DeviceManager:
 
         # open devices by sn
         open_param = gx.GxOpenParam()
-        open_param.content = gx.string_encoding(sn)
+        open_param.content = sn.encode()
         open_param.open_mode = gx.GxOpenMode.SN
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
@@ -651,7 +651,7 @@ class DeviceManager:
 
         # open device by user_id
         open_param = gx.GxOpenParam()
-        open_param.content = gx.string_encoding(user_id)
+        open_param.content = user_id.encode()
         open_param.open_mode = gx.GxOpenMode.USER_ID
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
@@ -692,7 +692,7 @@ class DeviceManager:
 
         # open device by ip
         open_param = gx.GxOpenParam()
-        open_param.content = gx.string_encoding(ip)
+        open_param.content = ip.encode()
         open_param.open_mode = gx.GxOpenMode.IP
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
@@ -733,7 +733,7 @@ class DeviceManager:
 
         # open device by ip
         open_param = gx.GxOpenParam()
-        open_param.content = gx.string_encoding(mac)
+        open_param.content = mac.encode()
         open_param.open_mode = gx.GxOpenMode.MAC
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)

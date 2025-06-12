@@ -135,7 +135,7 @@ class IntFeature(Feature):
             raise InvalidAccessError("%s.set: is not writeable" % self.feature_name)
 
         int_range = self.get_range()
-        check_ret = gx.range_check(
+        check_ret = gx.check_range(
             int_value, int_range["min"], int_range["max"], int_range["inc"]
         )
         if not check_ret:
@@ -223,7 +223,7 @@ class FloatFeature(Feature):
             raise InvalidAccessError("%s.set: is not writeable" % self.feature_name)
 
         float_range = self.get_range()
-        check_ret = gx.range_check(float_value, float_range["min"], float_range["max"])
+        check_ret = gx.check_range(float_value, float_range["min"], float_range["max"])
         if not check_ret:
             raise OutOfRangeError(
                 "FloatFeature.set: float_value out of bounds, %s.range=[%f, %f]"

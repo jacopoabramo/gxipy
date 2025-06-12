@@ -29,17 +29,6 @@ else:
         print("Cannot find DxImageProc.dll.")
 
 
-def string_encoding(string):
-    """
-    :breif      Python3.X: String encoded as bytes
-    :param      string
-    :return:
-    """
-    if sys.version_info.major == 3:
-        string = string.encode()
-    return string
-
-
 # image format handle
 class DxImageFormatConvertHandle:
     def __init__(self):

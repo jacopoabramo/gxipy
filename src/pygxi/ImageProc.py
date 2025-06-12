@@ -197,14 +197,14 @@ class RGBImage:
                 "RGBImage.contrast: Expected factor type is int, not %s" % type(factor)
             )
 
-        status = dx.dx.dx_contrast(
+        status = dx.dx_contrast(
             self.frame_data.image_buf,
             self.frame_data.image_buf,
             self.frame_data.image_size,
             factor,
         )
 
-        if status != dx.dx.DxStatus.OK:
+        if status != dx.DxStatus.OK:
             raise UnexpectedError(
                 "RGBImage.contrast: failed, error code:%s" % hex(status).__str__()
             )
@@ -244,7 +244,7 @@ class RGBImage:
                 "RGBImage.sharpen: Expected factor type is float, not %s" % type(factor)
             )
 
-        status = dx.dx.dx_sharpen_24b(
+        status = dx.dx_sharpen_24b(
             self.frame_data.image_buf,
             self.frame_data.image_buf,
             self.frame_data.width,
@@ -252,7 +252,7 @@ class RGBImage:
             factor,
         )
 
-        if status != dx.dx.DxStatus.OK:
+        if status != dx.DxStatus.OK:
             raise UnexpectedError(
                 "RGBImage.sharpen: failed, error code:%s" % hex(status).__str__()
             )
@@ -263,11 +263,11 @@ class RGBImage:
                     objective "white" area,or input image is white area.
         :return:    rgb_ratio:      (r_ratio, g_ratio, b_ratio)
         """
-        status, rgb_ratio = dx.dx.dx_get_white_balance_ratio(
+        status, rgb_ratio = dx.dx_get_white_balance_ratio(
             self.frame_data.image_buf, self.frame_data.width, self.frame_data.height
         )
 
-        if status != dx.dx.DxStatus.OK:
+        if status != dx.DxStatus.OK:
             raise UnexpectedError(
                 "RGBImage.get_white_balance_ratio: failed, error code:%s"
                 % hex(status).__str__()
