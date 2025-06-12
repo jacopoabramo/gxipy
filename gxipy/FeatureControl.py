@@ -2,11 +2,11 @@
 # -*- coding:utf-8 -*-
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
-from gxipy.dxwrapper import *
-from gxipy.Feature_s import *
-from gxipy.gxidef import *
-from gxipy.gxwrapper import *
-from gxipy.StatusProcessor import *
+import gxipy.Feature_s as fs
+import gxipy.gxwrapper as gx
+
+from .Exception import ParameterTypeError, UnexpectedError
+from .StatusProcessor import StatusProcessor
 
 
 class FeatureControl:
@@ -29,10 +29,10 @@ class FeatureControl:
                 "Expected feature_name type is int, not %s" % type(feature_name)
             )
 
-        status, node_access = gx_get_node_access_mode(self.__handle, feature_name)
+        status, node_access = gx.gx_get_node_access_mode(self.__handle, feature_name)
         StatusProcessor.process(status, "FeatureControl", "is_implemented")
-        if (node_access == GxNodeAccessMode.MODE_NI) or (
-            node_access == GxNodeAccessMode.MODE_UNDEF
+        if (node_access == gx.GxNodeAccessMode.MODE_NI) or (
+            node_access == gx.GxNodeAccessMode.MODE_UNDEF
         ):
             return False
         else:
@@ -49,10 +49,10 @@ class FeatureControl:
                 "Expected feature_name type is str, not %s" % type(feature_name)
             )
 
-        status, node_access = gx_get_node_access_mode(self.__handle, feature_name)
+        status, node_access = gx.gx_get_node_access_mode(self.__handle, feature_name)
         StatusProcessor.process(status, "FeatureControl", "is_readable")
-        if (node_access == GxNodeAccessMode.MODE_RO) or (
-            node_access == GxNodeAccessMode.MODE_RW
+        if (node_access == gx.GxNodeAccessMode.MODE_RO) or (
+            node_access == gx.GxNodeAccessMode.MODE_RW
         ):
             return True
         else:
@@ -69,10 +69,10 @@ class FeatureControl:
                 "Expected feature_name type is str, not %s" % type(feature_name)
             )
 
-        status, node_access = gx_get_node_access_mode(self.__handle, feature_name)
+        status, node_access = gx.gx_get_node_access_mode(self.__handle, feature_name)
         StatusProcessor.process(status, "FeatureControl", "is_readable")
-        if (node_access == GxNodeAccessMode.MODE_WO) or (
-            node_access == GxNodeAccessMode.MODE_RW
+        if (node_access == gx.GxNodeAccessMode.MODE_WO) or (
+            node_access == gx.GxNodeAccessMode.MODE_RW
         ):
             return True
         else:
@@ -96,7 +96,7 @@ class FeatureControl:
                 "The feature '%s' is not implemented" % feature_name
             )
 
-        int_feature = IntFeature_s(self.__handle, feature_name)
+        int_feature = fs.IntFeature_s(self.__handle, feature_name)
         return int_feature
 
     def get_enum_feature(self, feature_name):
@@ -117,7 +117,7 @@ class FeatureControl:
                 "The feature '%s' is not implemented" % feature_name
             )
 
-        enum_feature = EnumFeature_s(self.__handle, feature_name)
+        enum_feature = fs.EnumFeature_s(self.__handle, feature_name)
         return enum_feature
 
     def get_float_feature(self, feature_name):
@@ -138,7 +138,7 @@ class FeatureControl:
                 "The feature '%s' is not implemented" % feature_name
             )
 
-        float_feature = FloatFeature_s(self.__handle, feature_name)
+        float_feature = fs.FloatFeature_s(self.__handle, feature_name)
         return float_feature
 
     def get_bool_feature(self, feature_name):
@@ -159,7 +159,7 @@ class FeatureControl:
                 "The feature '%s' is not implemented" % feature_name
             )
 
-        bool_feature = BoolFeature_s(self.__handle, feature_name)
+        bool_feature = gx.BoolFeature_s(self.__handle, feature_name)
         return bool_feature
 
     def get_string_feature(self, feature_name):
@@ -180,7 +180,7 @@ class FeatureControl:
                 "The feature '%s' is not implemented" % feature_name
             )
 
-        string_feature = StringFeature_s(self.__handle, feature_name)
+        string_feature = fs.StringFeature_s(self.__handle, feature_name)
         return string_feature
 
     def get_command_feature(self, feature_name):
@@ -201,7 +201,7 @@ class FeatureControl:
                 "The feature '%s' is not implemented" % feature_name
             )
 
-        command_feature = CommandFeature_s(self.__handle, feature_name)
+        command_feature = fs.CommandFeature_s(self.__handle, feature_name)
         return command_feature
 
     def get_register_feature(self, feature_name):
@@ -222,7 +222,7 @@ class FeatureControl:
                 "The feature '%s' is not implemented" % feature_name
             )
 
-        register_feature = RegisterFeature_s(self.__handle, feature_name)
+        register_feature = fs.RegisterFeature_s(self.__handle, feature_name)
         return register_feature
 
     def feature_save(self, file_path):
@@ -231,7 +231,7 @@ class FeatureControl:
         :param file_path: Save Parameter file path
         :return:    None
         """
-        status = gx_feature_save(self.__handle, file_path)
+        status = gx.gx_feature_save(self.__handle, file_path)
         StatusProcessor.process(status, "FeatureControl", "feature_save")
 
     def feature_load(self, file_path, verify=False):
@@ -240,7 +240,7 @@ class FeatureControl:
         :param file_path: Load Parameter file path
         :return:    None
         """
-        status = gx_feature_load(self.__handle, file_path, verify)
+        status = gx.gx_feature_load(self.__handle, file_path, verify)
         StatusProcessor.process(status, "FeatureControl", "feature_load")
 
     def read_port(self, address, size):
@@ -260,7 +260,7 @@ class FeatureControl:
                 "Device.read_port: Expected size type is int, not %s" % type(size)
             )
 
-        status, buff_value = gx_read_port(self.__handle, address, size)
+        status, buff_value = gx.gx_read_port(self.__handle, address, size)
         StatusProcessor.process(status, "FeatureControl", "read_port")
         return buff_value
 
@@ -277,7 +277,7 @@ class FeatureControl:
                 "Expected address type is int, not %s" % type(address)
             )
 
-        status = gx_writer_port(self.__handle, address, buff, size)
+        status = gx.gx_writer_port(self.__handle, address, buff, size)
         StatusProcessor.process(status, "FeatureControl", "write_port")
 
     def read_port_stacked(self, entries, size):
@@ -295,7 +295,7 @@ class FeatureControl:
                 "Expected size type is int, not %s" % type(size)
             )
 
-        status = gx_read_port_stacked(self.__handle, entries, size)
+        status = gx.gx_read_port_stacked(self.__handle, entries, size)
         StatusProcessor.process(status, "Device", "read_remote_device_port_stacked")
 
         return status
@@ -314,7 +314,9 @@ class FeatureControl:
                 "Expected size type is int, not %s" % type(size)
             )
 
-        status = gx_set_write_remote_device_port_stacked(self.__handle, entries, size)
+        status = gx.gx_set_write_remote_device_port_stacked(
+            self.__handle, entries, size
+        )
         StatusProcessor.process(
             status, "Device", "set_write_remote_device_port_stacked"
         )
