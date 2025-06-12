@@ -8,11 +8,11 @@ import pygxi.Feature as feat
 import pygxi.gxwrapper as gx
 
 from .DataStream import DataStream
-from .Exception import NotFoundDevice, ParameterTypeError, UnexpectedError
+from .Exception import DeviceNotFoundError, ParameterTypeError, UnexpectedError
 from .FeatureControl import FeatureControl
 from .gxidef import UNSIGNED_INT_MAX
 from .ImageProcessConfig import ImageProcessConfig
-from .StatusProcessor import StatusProcessor
+from .status import check_return_status
 
 
 class Device:
@@ -1127,13 +1127,13 @@ class Device:
         status, data_stream_num = gx.gx_data_stream_number_from_device(
             self.__dev_handle
         )
-        StatusProcessor.process(status, "Device", "__get_stream_handle")
+        check_return_status(status, "Device", "__get_stream_handle")
 
         for index in range(data_stream_num):
             status, stream_handle = gx.gx_get_data_stream_handle_from_device(
                 self.__dev_handle, index + 1
             )
-            StatusProcessor.process(status, "Device", "__get_stream_handle")
+            check_return_status(status, "Device", "__get_stream_handle")
 
             self.data_stream.append(DataStream(self.__dev_handle, stream_handle))
 
@@ -1157,7 +1157,7 @@ class Device:
         :return:    None
         """
         status = gx.gx_close_device(self.__dev_handle)
-        StatusProcessor.process(status, "Device", "close_device")
+        check_return_status(status, "Device", "close_device")
         self.__dev_handle = None
         self.__py_offline_callback = None
         self.__offline_callback_handle = None
@@ -1193,7 +1193,7 @@ class Device:
             return None
 
         if len(self.data_stream) < stream_index:
-            raise NotFoundDevice("Device.get_stream: invalid index")
+            raise DeviceNotFoundError("Device.get_stream: invalid index")
 
         return self.data_stream[stream_index - 1]
 
@@ -1203,7 +1203,7 @@ class Device:
         :return:    Local device layer feature control object
         """
         status, local_handle = gx.gx_local_device_handle_from_device(self.__dev_handle)
-        StatusProcessor.process(status, "Device", "register_device_offline_callback")
+        check_return_status(status, "Device", "register_device_offline_callback")
         feature_control = FeatureControl(local_handle)
         return feature_control
 
@@ -1231,7 +1231,7 @@ class Device:
         status, offline_callback_handle = gx.gx_register_device_offline_callback(
             self.__dev_handle, self.__c_offline_callback
         )
-        StatusProcessor.process(status, "Device", "register_device_offline_callback")
+        check_return_status(status, "Device", "register_device_offline_callback")
 
         # callback will not recorded when register callback failed.
         self.__py_offline_callback = callback_func
@@ -1246,7 +1246,7 @@ class Device:
         status = gx.gx_unregister_device_offline_callback(
             self.__dev_handle, self.__offline_callback_handle
         )
-        StatusProcessor.process(status, "Device", "unregister_device_offline_callback")
+        check_return_status(status, "Device", "unregister_device_offline_callback")
         self.__py_offline_callback = None
         self.__offline_callback_handle = None
 
@@ -1268,7 +1268,7 @@ class Device:
         status = gx.gx_send_command(
             self.__dev_handle, gx.GxFeatureID.COMMAND_ACQUISITION_START
         )
-        StatusProcessor.process(status, "Device", "stream_on")
+        check_return_status(status, "Device", "stream_on")
 
         payload_size = self.data_stream[0].get_payload_size()
         self.data_stream[0].set_payload_size(payload_size)
@@ -1283,7 +1283,7 @@ class Device:
         status = gx.gx_send_command(
             self.__dev_handle, gx.GxFeatureID.COMMAND_ACQUISITION_STOP
         )
-        StatusProcessor.process(status, "Device", "stream_off")
+        check_return_status(status, "Device", "stream_off")
         self.data_stream[0].set_acquisition_flag(False)
 
     def export_config_file(self, file_path):
@@ -1300,7 +1300,7 @@ class Device:
             )
 
         status = gx.gx_export_config_file(self.__dev_handle, file_path)
-        StatusProcessor.process(status, "Device", "export_config_file")
+        check_return_status(status, "Device", "export_config_file")
 
     def import_config_file(self, file_path, verify=False):
         """
@@ -1324,7 +1324,7 @@ class Device:
             )
 
         status = gx.gx_import_config_file(self.__dev_handle, file_path, verify)
-        StatusProcessor.process(status, "Device", "import_config_file")
+        check_return_status(status, "Device", "import_config_file")
 
     def register_device_feature_callback(self, callback_func, feature_id, args):
         """
@@ -1348,7 +1348,7 @@ class Device:
         status, feature_callback_handle = gx.gx_register_feature_callback(
             self.__dev_handle, self.__c_feature_callback, feature_id, args
         )
-        StatusProcessor.process(status, "Device", "register_device_feature_callback")
+        check_return_status(status, "Device", "register_device_feature_callback")
 
         # callback will not recorded when register callback failed.
         self.__py_feature_callback = callback_func
@@ -1378,7 +1378,7 @@ class Device:
         status, feature_callback_handle = gx.gx_register_feature_call_back_by_string(
             self.__dev_handle, self.__c_feature_callback, feature_name, args
         )
-        StatusProcessor.process(status, "Device", "register_device_feature_callback")
+        check_return_status(status, "Device", "register_device_feature_callback")
 
         # callback will not recorded when register callback failed.
         self.__py_feature_callback = callback_func
@@ -1398,7 +1398,7 @@ class Device:
         status = gx.gx_unregister_feature_callback(
             self.__dev_handle, feature_id, feature_callback_handle
         )
-        StatusProcessor.process(status, "Device", "unregister_device_feature_callback")
+        check_return_status(status, "Device", "unregister_device_feature_callback")
 
         self.__py_feature_callback = None
 
@@ -1418,7 +1418,7 @@ class Device:
         status = gx.gx_unregister_feature_call_back_by_string(
             self.__dev_handle, feature_name, feature_callback_handle
         )
-        StatusProcessor.process(status, "Device", "unregister_device_feature_callback")
+        check_return_status(status, "Device", "unregister_device_feature_callback")
 
         self.__py_feature_callback = None
 
@@ -1452,7 +1452,7 @@ class Device:
         status, read_result = gx.gx_read_remote_device_port(
             self.__dev_handle, address, buff, size
         )
-        StatusProcessor.process(status, "Device", "read_remote_device_port")
+        check_return_status(status, "Device", "read_remote_device_port")
 
         return status
 
@@ -1473,7 +1473,7 @@ class Device:
         status, r_size = gx.gx_write_remote_device_port(
             self.__dev_handle, address, buf, size
         )
-        StatusProcessor.process(status, "Device", "write_remote_device_port")
+        check_return_status(status, "Device", "write_remote_device_port")
 
     def read_remote_device_port_stacked(self, entries, size):
         """
@@ -1493,7 +1493,7 @@ class Device:
         status = gx.gx_set_read_remote_device_port_stacked(
             self.__dev_handle, entries, size
         )
-        StatusProcessor.process(status, "Device", "read_remote_device_port_stacked")
+        check_return_status(status, "Device", "read_remote_device_port_stacked")
 
         return status
 
@@ -1514,7 +1514,7 @@ class Device:
         status = gx.gx_set_write_remote_device_port_stacked(
             self.__dev_handle, entries, size
         )
-        StatusProcessor.process(
+        check_return_status(
             status, "Device", "set_write_remote_device_port_stacked"
         )
 
@@ -1546,7 +1546,7 @@ class Device:
         status = gx.gx_set_device_persistent_ip_address(
             self.__dev_handle, ip, subnet_mask, default_gate_way
         )
-        StatusProcessor.process(status, "Device", "set_device_persistent_ip_address")
+        check_return_status(status, "Device", "set_device_persistent_ip_address")
 
     def get_device_persistent_ip_address(self):
         """
@@ -1557,7 +1557,7 @@ class Device:
         status, ip, subnet_mask, default_gateway = (
             gx.gx_get_device_persistent_ip_address(self.__dev_handle)
         )
-        StatusProcessor.process(status, "Device", "get_device_persistent_ip_address")
+        check_return_status(status, "Device", "get_device_persistent_ip_address")
         return status, ip, subnet_mask, default_gateway
 
 

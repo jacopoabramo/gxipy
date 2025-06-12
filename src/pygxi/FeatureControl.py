@@ -6,7 +6,7 @@ import pygxi.Feature_s as fs
 import pygxi.gxwrapper as gx
 
 from .Exception import ParameterTypeError, UnexpectedError
-from .StatusProcessor import StatusProcessor
+from .status import check_return_status
 
 
 class FeatureControl:
@@ -30,7 +30,7 @@ class FeatureControl:
             )
 
         status, node_access = gx.gx_get_node_access_mode(self.__handle, feature_name)
-        StatusProcessor.process(status, "FeatureControl", "is_implemented")
+        check_return_status(status, "FeatureControl", "is_implemented")
         if (node_access == gx.GxNodeAccessMode.MODE_NI) or (
             node_access == gx.GxNodeAccessMode.MODE_UNDEF
         ):
@@ -50,7 +50,7 @@ class FeatureControl:
             )
 
         status, node_access = gx.gx_get_node_access_mode(self.__handle, feature_name)
-        StatusProcessor.process(status, "FeatureControl", "is_readable")
+        check_return_status(status, "FeatureControl", "is_readable")
         if (node_access == gx.GxNodeAccessMode.MODE_RO) or (
             node_access == gx.GxNodeAccessMode.MODE_RW
         ):
@@ -70,7 +70,7 @@ class FeatureControl:
             )
 
         status, node_access = gx.gx_get_node_access_mode(self.__handle, feature_name)
-        StatusProcessor.process(status, "FeatureControl", "is_readable")
+        check_return_status(status, "FeatureControl", "is_readable")
         if (node_access == gx.GxNodeAccessMode.MODE_WO) or (
             node_access == gx.GxNodeAccessMode.MODE_RW
         ):
@@ -232,7 +232,7 @@ class FeatureControl:
         :return:    None
         """
         status = gx.gx_feature_save(self.__handle, file_path)
-        StatusProcessor.process(status, "FeatureControl", "feature_save")
+        check_return_status(status, "FeatureControl", "feature_save")
 
     def feature_load(self, file_path, verify=False):
         """
@@ -241,7 +241,7 @@ class FeatureControl:
         :return:    None
         """
         status = gx.gx_feature_load(self.__handle, file_path, verify)
-        StatusProcessor.process(status, "FeatureControl", "feature_load")
+        check_return_status(status, "FeatureControl", "feature_load")
 
     def read_port(self, address, size):
         """
@@ -261,7 +261,7 @@ class FeatureControl:
             )
 
         status, buff_value = gx.gx_read_port(self.__handle, address, size)
-        StatusProcessor.process(status, "FeatureControl", "read_port")
+        check_return_status(status, "FeatureControl", "read_port")
         return buff_value
 
     def write_port(self, address, buff, size):
@@ -278,7 +278,7 @@ class FeatureControl:
             )
 
         status = gx.gx_writer_port(self.__handle, address, buff, size)
-        StatusProcessor.process(status, "FeatureControl", "write_port")
+        check_return_status(status, "FeatureControl", "write_port")
 
     def read_port_stacked(self, entries, size):
         """
@@ -296,7 +296,7 @@ class FeatureControl:
             )
 
         status = gx.gx_read_port_stacked(self.__handle, entries, size)
-        StatusProcessor.process(status, "Device", "read_remote_device_port_stacked")
+        check_return_status(status, "Device", "read_remote_device_port_stacked")
 
         return status
 
@@ -317,7 +317,7 @@ class FeatureControl:
         status = gx.gx_set_write_remote_device_port_stacked(
             self.__handle, entries, size
         )
-        StatusProcessor.process(
+        check_return_status(
             status, "Device", "set_write_remote_device_port_stacked"
         )
 

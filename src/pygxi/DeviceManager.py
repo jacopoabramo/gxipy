@@ -5,12 +5,12 @@
 import pygxi.gxwrapper as gx
 
 from .Device import Device, GEVDevice, U2Device, U3VDevice
-from .Exception import InvalidParameter, NotFoundDevice, ParameterTypeError
+from .Exception import InvalidParameterError, DeviceNotFoundError, ParameterTypeError
 from .gxidef import UNSIGNED_INT_MAX, GxAccessMode, GxDeviceClassList, GxTLClassList
 from .ImageFormatConvert import ImageFormatConvert
 from .ImageProcess import ImageProcess
 from .Interface import Interface
-from .StatusProcessor import StatusProcessor
+from .status import check_return_status
 
 
 class DeviceManager(object):
@@ -29,7 +29,7 @@ class DeviceManager(object):
             )
 
         status = gx.gx_set_log_type(log_type)
-        StatusProcessor.process(status, "DeviceManager", "set_log_type")
+        check_return_status(status, "DeviceManager", "set_log_type")
 
     def get_log_type(self):
         """
@@ -38,7 +38,7 @@ class DeviceManager(object):
                     log_type:    log type,See detail in GxLogTypeList
         """
         status, log_type = gx.gx_get_log_type()
-        StatusProcessor.process(status, "DeviceManager", "get_log_type")
+        check_return_status(status, "DeviceManager", "get_log_type")
         self.__log_type = log_type
 
         return self.__log_type
@@ -46,7 +46,7 @@ class DeviceManager(object):
     def __new__(cls, *args, **kw):
         cls.__instance_num += 1
         status = gx.gx_init_lib()
-        StatusProcessor.process(status, "DeviceManager", "init_lib")
+        check_return_status(status, "DeviceManager", "init_lib")
         return object.__new__(cls, *args)
 
     def __init__(self):
@@ -59,11 +59,11 @@ class DeviceManager(object):
         self.__class__.__instance_num -= 1
         if self.__class__.__instance_num <= 0:
             status = gx.gx_close_lib()
-            StatusProcessor.process(status, "DeviceManager", "close_lib")
+            check_return_status(status, "DeviceManager", "close_lib")
 
     def __create_device(self, device_class, device_handle):
         status, interface_handle = gx.gx_get_parent_interface_from_device(device_handle)
-        StatusProcessor.process(status, "DeviceManager", "__create_device")
+        check_return_status(status, "DeviceManager", "__create_device")
 
         index = 0
         for interface_item in self.__interface_info_list:
@@ -92,7 +92,7 @@ class DeviceManager(object):
                 Interface(interface_handle, self.__interface_info_list[index]),
             )
         else:
-            raise NotFoundDevice(
+            raise DeviceNotFoundError(
                 "DeviceManager.__create_device: Does not support this device type."
             )
 
@@ -137,17 +137,17 @@ class DeviceManager(object):
         :return:    interface info list
         """
         status, interface_number = gx.gx_get_interface_number()
-        StatusProcessor.process(status, "DeviceManager", "__get_interface_info_list")
+        check_return_status(status, "DeviceManager", "__get_interface_info_list")
 
         interface_info_list = []
         for nindex in range(interface_number):
             status, interface_info = gx.gx_get_interface_info(nindex + 1)
-            StatusProcessor.process(
+            check_return_status(
                 status, "DeviceManager", "__get_interface_info_list"
             )
 
             status, interface_handle = gx.gx_get_interface_handle(nindex + 1)
-            StatusProcessor.process(
+            check_return_status(
                 status, "DeviceManager", "__get_interface_info_list"
             )
 
@@ -265,7 +265,7 @@ class DeviceManager(object):
         for i in range(dev_mum):
             if base_info_list[i].device_class == GxDeviceClassList.GEV:
                 status, ip_info = gx.gx_get_device_ip_info(i + 1)
-                StatusProcessor.process(status, "DeviceManager", "__get_ip_info")
+                check_return_status(status, "DeviceManager", "__get_ip_info")
                 ip_info_list.append(ip_info)
             else:
                 ip_info_list.append(gx.GxDeviceIPInfo())
@@ -294,14 +294,14 @@ class DeviceManager(object):
             return 0, None
 
         status, dev_num = gx.gx_update_device_list(timeout)
-        StatusProcessor.process(status, "DeviceManager", "update_device_list")
+        check_return_status(status, "DeviceManager", "update_device_list")
 
         self.__interface_num, self.__interface_info_list = (
             self.__get_interface_info_list()
         )
 
         status, base_info_list = gx.gx_get_all_device_base_info(dev_num)
-        StatusProcessor.process(status, "DeviceManager", "update_device_list")
+        check_return_status(status, "DeviceManager", "update_device_list")
 
         ip_info_list = self.__get_ip_info(base_info_list, dev_num)
         self.__device_num = dev_num
@@ -334,14 +334,14 @@ class DeviceManager(object):
             return 0, None
 
         status, dev_num = gx.gx_update_device_list_ex(tl_type, timeout)
-        StatusProcessor.process(status, "DeviceManager", "update_device_list_ex")
+        check_return_status(status, "DeviceManager", "update_device_list_ex")
 
         self.__interface_num, self.__interface_info_list = (
             self.__get_interface_info_list()
         )
 
         status, base_info_list = gx.gx_get_all_device_base_info(dev_num)
-        StatusProcessor.process(status, "DeviceManager", "update_device_list_ex")
+        check_return_status(status, "DeviceManager", "update_device_list_ex")
 
         ip_info_list = self.__get_ip_info(base_info_list, dev_num)
         self.__device_num = dev_num
@@ -373,14 +373,14 @@ class DeviceManager(object):
             return 0, None
 
         status, dev_num = gx.gx_update_all_device_list(timeout)
-        StatusProcessor.process(status, "DeviceManager", "update_all_device_list")
+        check_return_status(status, "DeviceManager", "update_all_device_list")
 
         self.__interface_num, self.__interface_info_list = (
             self.__get_interface_info_list()
         )
 
         status, base_info_list = gx.gx_get_all_device_base_info(dev_num)
-        StatusProcessor.process(status, "DeviceManager", "update_all_device_list")
+        check_return_status(status, "DeviceManager", "update_all_device_list")
 
         ip_info_list = self.__get_ip_info(base_info_list, dev_num)
         self.__device_num = dev_num
@@ -429,10 +429,10 @@ class DeviceManager(object):
             # Re-update the device
             self.update_device_list()
             if self.__interface_num < index:
-                raise NotFoundDevice("DeviceManager.get_interface: invalid index")
+                raise DeviceNotFoundError("DeviceManager.get_interface: invalid index")
 
         status, interface_handle = gx.gx_get_interface_handle(index)
-        StatusProcessor.process(status, "DeviceManager", "get_interface")
+        check_return_status(status, "DeviceManager", "get_interface")
 
         return Interface(interface_handle, self.__interface_info_list[index - 1])
 
@@ -498,7 +498,7 @@ class DeviceManager(object):
             # Re-update the device
             self.update_device_list()
             if self.__device_num < index:
-                raise NotFoundDevice(
+                raise DeviceNotFoundError(
                     "DeviceManager.open_device_by_index: invalid index"
                 )
 
@@ -508,7 +508,7 @@ class DeviceManager(object):
         open_param.open_mode = gx.GxOpenMode.INDEX
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
-        StatusProcessor.process(status, "DeviceManager", "open_device_by_index")
+        check_return_status(status, "DeviceManager", "open_device_by_index")
 
         # get device class
         device_class = self.__device_info_list[index - 1]["device_class"]
@@ -571,7 +571,7 @@ class DeviceManager(object):
             device_class = self.__get_device_class_by_sn(sn)
             if device_class == -1:
                 # don't find this sn
-                raise NotFoundDevice(
+                raise DeviceNotFoundError(
                     "DeviceManager.open_device_by_sn: Not found device"
                 )
 
@@ -581,7 +581,7 @@ class DeviceManager(object):
         open_param.open_mode = gx.GxOpenMode.SN
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
-        StatusProcessor.process(status, "DeviceManager", "open_device_by_sn")
+        check_return_status(status, "DeviceManager", "open_device_by_sn")
 
         return self.__create_device(device_class, handle)
 
@@ -614,7 +614,7 @@ class DeviceManager(object):
                 "Expected user_id type is str, not %s" % type(user_id)
             )
         elif user_id.__len__() == 0:
-            raise InvalidParameter(
+            raise InvalidParameterError(
                 "DeviceManager.open_device_by_user_id: Don't support user_id's length is 0"
             )
 
@@ -644,7 +644,7 @@ class DeviceManager(object):
             device_class = self.__get_device_class_by_user_id(user_id)
             if device_class == -1:
                 # don't find this user_id
-                raise NotFoundDevice(
+                raise DeviceNotFoundError(
                     "DeviceManager.open_device_by_user_id: Not found device"
                 )
 
@@ -654,7 +654,7 @@ class DeviceManager(object):
         open_param.open_mode = gx.GxOpenMode.USER_ID
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
-        StatusProcessor.process(status, "DeviceManager", "open_device_by_user_id")
+        check_return_status(status, "DeviceManager", "open_device_by_user_id")
 
         return self.__create_device(device_class, handle)
 
@@ -695,7 +695,7 @@ class DeviceManager(object):
         open_param.open_mode = gx.GxOpenMode.IP
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
-        StatusProcessor.process(status, "DeviceManager", "open_device_by_ip")
+        check_return_status(status, "DeviceManager", "open_device_by_ip")
 
         return self.__create_device(GxDeviceClassList.GEV, handle)
 
@@ -736,7 +736,7 @@ class DeviceManager(object):
         open_param.open_mode = gx.GxOpenMode.MAC
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
-        StatusProcessor.process(status, "DeviceManager", "open_device_by_mac")
+        check_return_status(status, "DeviceManager", "open_device_by_mac")
 
         return self.__create_device(GxDeviceClassList.GEV, handle)
 
@@ -758,7 +758,7 @@ class DeviceManager(object):
             "gige_reset_device",
         )
         status = gx.gx_gige_reset_device(mac_address, reset_device_mode)
-        StatusProcessor.process(status, "DeviceManager", "gige_reset_device")
+        check_return_status(status, "DeviceManager", "gige_reset_device")
 
     def gige_force_ip(self, mac_address, ip_address, subnet_mask, default_gate_way):
         """
@@ -784,7 +784,7 @@ class DeviceManager(object):
         status = gx.gx_gige_force_ip(
             mac_address, ip_address, subnet_mask, default_gate_way
         )
-        StatusProcessor.process(status, "DeviceManager", "gige_force_ip")
+        check_return_status(status, "DeviceManager", "gige_force_ip")
 
     def gige_ip_configuration(
         self,
@@ -839,7 +839,7 @@ class DeviceManager(object):
             default_gateway,
             user_id,
         )
-        StatusProcessor.process(status, "DeviceManager", "gige_ip_configuration")
+        check_return_status(status, "DeviceManager", "gige_ip_configuration")
 
     def create_image_format_convert(self):
         """

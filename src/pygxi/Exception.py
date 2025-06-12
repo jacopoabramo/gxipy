@@ -6,206 +6,91 @@ from pygxi.gxwrapper import GxStatusList
 
 
 class UnexpectedError(Exception):
-    """
-    brief:  Unexpected error exception
-    param:  args            exception description
-    return: none
-    """
+    """Exception raised for unexpected errors."""
 
-    def __init__(self, args):
-        Exception.__init__(self, args)
+class NoTLFoundError(Exception):
+    """ Exception raised when a Transport Layer (TL) is not found."""
 
+class DeviceNotFoundError(Exception):
+    """Exception raised when a device is not found."""
 
-class NotFoundTL(Exception):
-    """
-    brief:  not found TL exception
-    param:  args             exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
+class DeviceOfflineError(Exception):
+    """Exception raised when a device is offline or not connected."""
 
 
-class NotFoundDevice(Exception):
-    """
-    brief:  not found device exception
-    param:  args              exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
+class InvalidParameterError(Exception):
+    """Exception raised for invalid parameters."""
 
 
-class OffLine(Exception):
-    """
-    brief:  device offline exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
+class InvalidHandleError(Exception):
+    """Exception raised for invalid handle."""
 
 
-class InvalidParameter(Exception):
-    """
-    brief:  input invalid parameter exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
+class InvalidCallError(Exception):
+    """Exception raised for invalid function calls."""
 
 
-class InvalidHandle(Exception):
-    """
-    brief:  invalid handle exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
+class InvalidAccessError(Exception):
+    """Exception raised for invalid access to a resource."""
 
 
-class InvalidCall(Exception):
-    """
-    brief:  invalid callback exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
-
-
-class InvalidAccess(Exception):
-    """
-    brief:  invalid access exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
-
-
-class NeedMoreBuffer(Exception):
-    """
-    brief:  need more buffer exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
+class NotEnoughMemoryError(Exception):
+    """Exception raised when more memory is needed for an operation."""
 
 
 class FeatureTypeError(Exception):
-    """
-    brief:  feature id error exception
-    param:  args            exception description
-    return: none
-    """
+    """Exception raised for feature type errors."""
 
-    def __init__(self, args):
-        Exception.__init__(self, args)
+class OutOfRangeError(Exception):
+    """Exception raised when a parameter is out of range."""
 
-
-class OutOfRange(Exception):
-    """
-    brief:  param out of range exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
-
-
-class NoImplemented(Exception):
-    """
-    brief:  param out of Implemented exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
-
-
-class NotInitApi(Exception):
-    """
-    brief:  not init api exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
-
-
-class Timeout(Exception):
-    """
-    brief:  timeout exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
-
+class APINotInitializedError(Exception):
+    """Exception raised when an API is not initialized."""
 
 class ParameterTypeError(Exception):
-    """
-    brief:  parameter type error exception
-    param:  args            exception description
-    return: none
-    """
-
-    def __init__(self, args):
-        Exception.__init__(self, args)
+    """Exception raised when a parameter type is incorrect."""
 
 
-def exception_deal(status, args):
+def raise_error(status: GxStatusList, error_msg: str) -> None:
+    """Check the incoming status flag and raise the corresponding exception.
+    
+    Parameters
+    ----------
+    status : GxStatusList
+        The status code returned by a function.
+    error_msg : str
+        The error message to be included in the exception.
     """
-    brief:  deal with different exception
-    param:  status         function return value
-    param:  args            exception description
-    return: none
-    """
-    if status == GxStatusList.ERROR:
-        raise UnexpectedError(args)
-    elif status == GxStatusList.NOT_FOUND_TL:
-        raise NotFoundTL(args)
-    elif status == GxStatusList.NOT_FOUND_DEVICE:
-        raise NotFoundDevice(args)
-    elif status == GxStatusList.OFFLINE:
-        raise OffLine(args)
-    elif status == GxStatusList.INVALID_PARAMETER:
-        raise InvalidParameter(args)
-    elif status == GxStatusList.INVALID_HANDLE:
-        raise InvalidHandle(args)
-    elif status == GxStatusList.INVALID_CALL:
-        raise InvalidCall(args)
-    elif status == GxStatusList.INVALID_ACCESS:
-        raise InvalidAccess(args)
-    elif status == GxStatusList.NEED_MORE_BUFFER:
-        raise NeedMoreBuffer(args)
-    elif status == GxStatusList.ERROR_TYPE:
-        raise FeatureTypeError(args)
-    elif status == GxStatusList.OUT_OF_RANGE:
-        raise OutOfRange(args)
-    elif status == GxStatusList.NOT_IMPLEMENTED:
-        raise NoImplemented(args)
-    elif status == GxStatusList.NOT_INIT_API:
-        raise NotInitApi(args)
-    elif status == GxStatusList.TIMEOUT:
-        raise Timeout(args)
-    elif status == GxStatusList.REPEAT_OPENED:
-        raise InvalidAccess(args)
-    else:
-        raise Exception(args)
+    match status:
+        case GxStatusList.ERROR:
+            raise UnexpectedError(error_msg)
+        case GxStatusList.NOT_FOUND_TL:
+            raise NoTLFoundError(error_msg)
+        case GxStatusList.NOT_FOUND_DEVICE:
+            raise DeviceNotFoundError(error_msg)
+        case GxStatusList.OFFLINE:
+            raise DeviceOfflineError(error_msg)
+        case GxStatusList.INVALID_PARAMETER:
+            raise InvalidParameterError(error_msg)
+        case GxStatusList.INVALID_HANDLE:
+            raise InvalidHandleError(error_msg)
+        case GxStatusList.INVALID_CALL:
+            raise InvalidCallError(error_msg)
+        case GxStatusList.INVALID_ACCESS:
+            raise InvalidAccessError(error_msg)
+        case GxStatusList.NEED_MORE_BUFFER:
+            raise NotEnoughMemoryError(error_msg)
+        case GxStatusList.ERROR_TYPE:
+            raise FeatureTypeError(error_msg)
+        case GxStatusList.OUT_OF_RANGE:
+            raise OutOfRangeError(error_msg)
+        case GxStatusList.NOT_IMPLEMENTED:
+            raise NotImplementedError(error_msg)
+        case GxStatusList.NOT_INIT_API:
+            raise APINotInitializedError(error_msg)
+        case GxStatusList.TIMEOUT:
+            raise TimeoutError(error_msg)
+        case GxStatusList.REPEAT_OPENED:
+            raise InvalidAccessError(error_msg)
+        case _:
+            raise Exception(error_msg)

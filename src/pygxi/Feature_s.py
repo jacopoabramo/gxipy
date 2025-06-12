@@ -6,7 +6,7 @@ import pygxi.gxwrapper as gx
 
 from .Exception import ParameterTypeError, UnexpectedError
 from .ImageProc import Buffer
-from .StatusProcessor import StatusProcessor
+from .status import check_return_status
 
 
 class Feature_s:
@@ -54,7 +54,7 @@ class IntFeature_s(Feature_s):
         status, int_feature_info = gx.gx_get_int_feature(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "IntFeature_s", "get_range")
+        check_return_status(status, "IntFeature_s", "get_range")
 
         return self.__range_dicts(int_feature_info)
 
@@ -67,7 +67,7 @@ class IntFeature_s(Feature_s):
         status, int_feature_info = gx.gx_get_int_feature(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "IntFeature_s", "get")
+        check_return_status(status, "IntFeature_s", "get")
 
         return int_feature_info.value
 
@@ -86,7 +86,7 @@ class IntFeature_s(Feature_s):
         status = gx.gx_set_int_feature_value(
             self.__handle, self.__feature_name, int_value
         )
-        StatusProcessor.process(status, "IntFeature_s", "set")
+        check_return_status(status, "IntFeature_s", "set")
 
 
 class EnumFeature_s(Feature_s):
@@ -121,7 +121,7 @@ class EnumFeature_s(Feature_s):
         status, enum_feature_info = gx.gx_get_enum_feature(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "FeatureControl", "gx_get_enum_feature")
+        check_return_status(status, "FeatureControl", "gx_get_enum_feature")
 
         return self.__range_dicts(enum_feature_info)
 
@@ -134,7 +134,7 @@ class EnumFeature_s(Feature_s):
         status, enum_feature_info = gx.gx_get_enum_feature(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "FeatureControl", "gx_get_enum_feature")
+        check_return_status(status, "FeatureControl", "gx_get_enum_feature")
 
         return enum_feature_info.cur_value.cur_value, gx.string_decoding(
             enum_feature_info.cur_value.cur_symbolic
@@ -150,12 +150,12 @@ class EnumFeature_s(Feature_s):
             status = gx.gx_set_enum_feature_value(
                 self.__handle, self.__feature_name, enum_value
             )
-            StatusProcessor.process(status, "EnumFeature_s", "set")
+            check_return_status(status, "EnumFeature_s", "set")
         elif isinstance(enum_value, str):
             status = gx.gx_set_enum_feature_value_string(
                 self.__handle, self.__feature_name, enum_value
             )
-            StatusProcessor.process(status, "EnumFeature_s", "set")
+            check_return_status(status, "EnumFeature_s", "set")
         else:
             raise ParameterTypeError(
                 "EnumFeature_s.set: "
@@ -199,7 +199,7 @@ class FloatFeature_s(Feature_s):
         status, float_feature_info = gx.gx_get_float_feature(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "FloatFeature_s", "get_range")
+        check_return_status(status, "FloatFeature_s", "get_range")
         return self.__range_dict(float_feature_info)
 
     def get(self):
@@ -210,7 +210,7 @@ class FloatFeature_s(Feature_s):
         status, float_feature_info = gx.gx_get_float_feature(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "FloatFeature_s", "get_range")
+        check_return_status(status, "FloatFeature_s", "get_range")
         return float_feature_info.cur_value
 
     def set(self, float_value):
@@ -228,7 +228,7 @@ class FloatFeature_s(Feature_s):
         status = gx.gx_set_float_feature_value(
             self.__handle, self.__feature_name, float_value
         )
-        StatusProcessor.process(status, "FloatFeature_s", "set")
+        check_return_status(status, "FloatFeature_s", "set")
 
 
 class BoolFeature_s(Feature_s):
@@ -250,7 +250,7 @@ class BoolFeature_s(Feature_s):
         status, bool_feature_value = gx.gx_get_bool_feature(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "BoolFeature_s", "get")
+        check_return_status(status, "BoolFeature_s", "get")
         return bool_feature_value
 
     def set(self, bool_value):
@@ -268,7 +268,7 @@ class BoolFeature_s(Feature_s):
         status = gx.gx_set_bool_feature_value(
             self.__handle, self.__feature_name, bool_value
         )
-        StatusProcessor.process(status, "BoolFeature_s", "set")
+        check_return_status(status, "BoolFeature_s", "set")
 
 
 class StringFeature_s(Feature_s):
@@ -290,7 +290,7 @@ class StringFeature_s(Feature_s):
         status, string_value = gx.gx_get_string_feature(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "StringFeature_s", "get_string_max_length")
+        check_return_status(status, "StringFeature_s", "get_string_max_length")
         return string_value.max_length
 
     def get(self):
@@ -301,7 +301,7 @@ class StringFeature_s(Feature_s):
         status, string_value = gx.gx_get_string_feature(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "StringFeature_s", "get")
+        check_return_status(status, "StringFeature_s", "get")
         return gx.string_decoding(string_value.cur_value)
 
     def set(self, input_string):
@@ -319,7 +319,7 @@ class StringFeature_s(Feature_s):
         status = gx.gx_set_string_feature_value(
             self.__handle, self.__feature_name, input_string
         )
-        StatusProcessor.process(status, "StringFeature_s", "set")
+        check_return_status(status, "StringFeature_s", "set")
 
 
 class CommandFeature_s(Feature_s):
@@ -339,7 +339,7 @@ class CommandFeature_s(Feature_s):
         :return:    None
         """
         status = gx.gx_feature_send_command(self.__handle, self.__feature_name)
-        StatusProcessor.process(status, "CommandFeature_s", "send_command")
+        check_return_status(status, "CommandFeature_s", "send_command")
 
 
 class RegisterFeature_s(Feature_s):
@@ -361,7 +361,7 @@ class RegisterFeature_s(Feature_s):
         status, register_feature_length = gx.gx_get_register_feature_length(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "RegisterFeature_s", "get_register_length")
+        check_return_status(status, "RegisterFeature_s", "get_register_length")
         return register_feature_length
 
     def get_buffer(self):
@@ -372,7 +372,7 @@ class RegisterFeature_s(Feature_s):
         status, register_feature_value = gx.gx_get_register_feature_value(
             self.__handle, self.__feature_name
         )
-        StatusProcessor.process(status, "RegisterFeature_s", "get_buffer")
+        check_return_status(status, "RegisterFeature_s", "get_buffer")
         return Buffer(register_feature_value)
 
     def set_buffer(self, buf):
@@ -403,4 +403,4 @@ class RegisterFeature_s(Feature_s):
         status = gx.gx_set_register_feature_value(
             self.__handle, self.__feature_name, buf.get_ctype_array(), buf.get_length()
         )
-        StatusProcessor.process(status, "RegisterFeature_s", "set_buffer")
+        check_return_status(status, "RegisterFeature_s", "set_buffer")

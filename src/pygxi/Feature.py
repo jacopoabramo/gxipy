@@ -7,8 +7,8 @@
 import pygxi.gxwrapper as gx
 
 from pygxi.ImageProc import Buffer
-from pygxi.StatusProcessor import StatusProcessor
-from .Exception import InvalidAccess, NoImplemented, OutOfRange, ParameterTypeError
+from pygxi.status import check_return_status
+from .Exception import InvalidAccessError, OutOfRangeError, ParameterTypeError
 
 
 class Feature:
@@ -44,7 +44,7 @@ class Feature:
         elif status == gx.GxStatusList.INVALID_PARAMETER:
             return False
         else:
-            StatusProcessor.process(status, "Feature", "is_implemented")
+            check_return_status(status, "Feature", "is_implemented")
 
     def is_readable(self):
         """
@@ -56,7 +56,7 @@ class Feature:
             return False
 
         status, is_readable = gx.gx_is_readable(self.__handle, self.__feature)
-        StatusProcessor.process(status, "Feature", "is_readable")
+        check_return_status(status, "Feature", "is_readable")
         return is_readable
 
     def is_writable(self):
@@ -69,7 +69,7 @@ class Feature:
             return False
 
         status, is_writable = gx.gx_is_writable(self.__handle, self.__feature)
-        StatusProcessor.process(status, "Feature", "is_writable")
+        check_return_status(status, "Feature", "is_writable")
         return is_writable
 
 
@@ -99,10 +99,10 @@ class IntFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            raise NoImplemented("%s.get_range is not support" % self.feature_name)
+            raise NotImplementedError("%s.get_range is not support" % self.feature_name)
 
         status, int_range = gx.gx_get_int_range(self.__handle, self.__feature)
-        StatusProcessor.process(status, "IntFeature", "get_range")
+        check_return_status(status, "IntFeature", "get_range")
         return self.__range_dict(int_range)
 
     def get(self):
@@ -112,10 +112,10 @@ class IntFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            raise InvalidAccess("%s.get is not readable" % self.feature_name)
+            raise InvalidAccessError("%s.get is not readable" % self.feature_name)
 
         status, int_value = gx.gx_get_int(self.__handle, self.__feature)
-        StatusProcessor.process(status, "IntFeature", "get")
+        check_return_status(status, "IntFeature", "get")
         return int_value
 
     def set(self, int_value):
@@ -132,14 +132,14 @@ class IntFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
+            raise InvalidAccessError("%s.set: is not writeable" % self.feature_name)
 
         int_range = self.get_range()
         check_ret = gx.range_check(
             int_value, int_range["min"], int_range["max"], int_range["inc"]
         )
         if not check_ret:
-            raise OutOfRange(
+            raise OutOfRangeError(
                 "IntFeature.set: "
                 "int_value out of bounds, %s.range=[%d, %d, %d]"
                 % (
@@ -152,7 +152,7 @@ class IntFeature(Feature):
             return
 
         status = gx.gx_set_int(self.__handle, self.__feature, int_value)
-        StatusProcessor.process(status, "IntFeature", "set")
+        check_return_status(status, "IntFeature", "set")
 
 
 class FloatFeature(Feature):
@@ -187,10 +187,10 @@ class FloatFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            raise NoImplemented("%s.get_range is not support" % self.feature_name)
+            raise NotImplementedError("%s.get_range is not support" % self.feature_name)
 
         status, float_range = gx.gx_get_float_range(self.__handle, self.__feature)
-        StatusProcessor.process(status, "FloatFeature", "get_range")
+        check_return_status(status, "FloatFeature", "get_range")
         return self.__range_dict(float_range)
 
     def get(self):
@@ -200,10 +200,10 @@ class FloatFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            raise InvalidAccess("%s.get: is not readable" % self.feature_name)
+            raise InvalidAccessError("%s.get: is not readable" % self.feature_name)
 
         status, float_value = gx.gx_get_float(self.__handle, self.__feature)
-        StatusProcessor.process(status, "FloatFeature", "get")
+        check_return_status(status, "FloatFeature", "get")
         return float_value
 
     def set(self, float_value):
@@ -220,19 +220,19 @@ class FloatFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
+            raise InvalidAccessError("%s.set: is not writeable" % self.feature_name)
 
         float_range = self.get_range()
         check_ret = gx.range_check(float_value, float_range["min"], float_range["max"])
         if not check_ret:
-            raise OutOfRange(
+            raise OutOfRangeError(
                 "FloatFeature.set: float_value out of bounds, %s.range=[%f, %f]"
                 % (self.feature_name, float_range["min"], float_range["max"])
             )
             return
 
         status = gx.gx_set_float(self.__handle, self.__feature, float_value)
-        StatusProcessor.process(status, "FloatFeature", "set")
+        check_return_status(status, "FloatFeature", "set")
 
 
 class EnumFeature(Feature):
@@ -252,15 +252,15 @@ class EnumFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            raise NoImplemented("%s.get_range: is not support" % self.feature_name)
+            raise NotImplementedError("%s.get_range: is not support" % self.feature_name)
 
         status, enum_num = gx.gx_get_enum_entry_nums(self.__handle, self.__feature)
-        StatusProcessor.process(status, "EnumFeature", "get_range")
+        check_return_status(status, "EnumFeature", "get_range")
 
         status, enum_list = gx.gx_get_enum_description(
             self.__handle, self.__feature, enum_num
         )
-        StatusProcessor.process(status, "EnumFeature", "get_range")
+        check_return_status(status, "EnumFeature", "get_range")
 
         enum_dict = {}
         for i in range(enum_num):
@@ -276,10 +276,10 @@ class EnumFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            raise InvalidAccess("%s.get: is not readable" % self.feature_name)
+            raise InvalidAccessError("%s.get: is not readable" % self.feature_name)
 
         status, enum_value = gx.gx_get_enum(self.__handle, self.__feature)
-        StatusProcessor.process(status, "EnumFeature", "get")
+        check_return_status(status, "EnumFeature", "get")
 
         range_dict = self.get_range()
         new_dicts = {v: k for k, v in range_dict.items()}
@@ -299,19 +299,19 @@ class EnumFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
+            raise InvalidAccessError("%s.set: is not writeable" % self.feature_name)
 
         range_dict = self.get_range()
         enum_value_list = range_dict.values()
         if enum_value not in enum_value_list:
-            raise OutOfRange(
+            raise OutOfRangeError(
                 "EnumFeature.set: enum_value out of bounds, %s.range:%s"
                 % (self.feature_name, range_dict.__str__())
             )
             return
 
         status = gx.gx_set_enum(self.__handle, self.__feature, enum_value)
-        StatusProcessor.process(status, "EnumFeature", "set")
+        check_return_status(status, "EnumFeature", "set")
 
 
 class BoolFeature(Feature):
@@ -331,10 +331,10 @@ class BoolFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            raise InvalidAccess("%s.get is not readable" % self.feature_name)
+            raise InvalidAccessError("%s.get is not readable" % self.feature_name)
 
         status, bool_value = gx.gx_get_bool(self.__handle, self.__feature)
-        StatusProcessor.process(status, "BoolFeature", "get")
+        check_return_status(status, "BoolFeature", "get")
         return bool_value
 
     def set(self, bool_value):
@@ -351,10 +351,10 @@ class BoolFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
+            raise InvalidAccessError("%s.set: is not writeable" % self.feature_name)
 
         status = gx.gx_set_bool(self.__handle, self.__feature, bool_value)
-        StatusProcessor.process(status, "BoolFeature", "set")
+        check_return_status(status, "BoolFeature", "set")
 
 
 class StringFeature(Feature):
@@ -374,12 +374,12 @@ class StringFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            raise NoImplemented(
+            raise NotImplementedError(
                 "%s.get_string_max_length is not support" % self.feature_name
             )
 
         status, length = gx.gx_get_string_max_length(self.__handle, self.__feature)
-        StatusProcessor.process(status, "StringFeature", "get_string_max_length")
+        check_return_status(status, "StringFeature", "get_string_max_length")
         return length
 
     def get(self):
@@ -389,10 +389,10 @@ class StringFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            raise InvalidAccess("%s.get is not readable" % self.feature_name)
+            raise InvalidAccessError("%s.get is not readable" % self.feature_name)
 
         status, strings = gx.gx_get_string(self.__handle, self.__feature)
-        StatusProcessor.process(status, "StringFeature", "get")
+        check_return_status(status, "StringFeature", "get")
         return strings
 
     def set(self, input_string):
@@ -409,11 +409,11 @@ class StringFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
+            raise InvalidAccessError("%s.set: is not writeable" % self.feature_name)
 
         max_length = self.get_string_max_length()
         if input_string.__len__() > max_length:
-            raise OutOfRange(
+            raise OutOfRangeError(
                 "StringFeature.set: "
                 "input_string length out of bounds, %s.length_max:%s"
                 % (self.feature_name, max_length)
@@ -421,7 +421,7 @@ class StringFeature(Feature):
             return
 
         status = gx.gx_set_string(self.__handle, self.__feature, input_string)
-        StatusProcessor.process(status, "StringFeature", "set")
+        check_return_status(status, "StringFeature", "set")
 
 
 class BufferFeature(Feature):
@@ -441,12 +441,12 @@ class BufferFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            raise NoImplemented(
+            raise NotImplementedError(
                 "%s.get_buffer_length is not support" % self.feature_name
             )
 
         status, length = gx.gx_get_buffer_length(self.__handle, self.__feature)
-        StatusProcessor.process(status, "BuffFeature", "get_buffer_length")
+        check_return_status(status, "BuffFeature", "get_buffer_length")
         return length
 
     def get_buffer(self):
@@ -457,10 +457,10 @@ class BufferFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            raise InvalidAccess("%s.get_buffer is not readable" % self.feature_name)
+            raise InvalidAccessError("%s.get_buffer is not readable" % self.feature_name)
 
         status, buf = gx.gx_get_buffer(self.__handle, self.__feature)
-        StatusProcessor.process(status, "BuffFeature", "get_buffer")
+        check_return_status(status, "BuffFeature", "get_buffer")
         return Buffer(buf)
 
     def set_buffer(self, buf):
@@ -477,11 +477,11 @@ class BufferFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            raise InvalidAccess("%s.set_buffer is not writeable" % self.feature_name)
+            raise InvalidAccessError("%s.set_buffer is not writeable" % self.feature_name)
 
         max_length = self.get_buffer_length()
         if buf.get_length() > max_length:
-            raise OutOfRange(
+            raise OutOfRangeError(
                 "BuffFeature.set_buffer: "
                 "buff length out of bounds, %s.length_max:%s"
                 % (self.feature_name, max_length)
@@ -490,7 +490,7 @@ class BufferFeature(Feature):
         status = gx.gx_set_buffer(
             self.__handle, self.__feature, buf.get_ctype_array(), buf.get_length()
         )
-        StatusProcessor.process(status, "BuffFeature", "set_buffer")
+        check_return_status(status, "BuffFeature", "set_buffer")
 
 
 class CommandFeature(Feature):
@@ -510,7 +510,7 @@ class CommandFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            raise NoImplemented("%s.send_command is not support" % self.feature_name)
+            raise NotImplementedError("%s.send_command is not support" % self.feature_name)
 
         status = gx.gx_send_command(self.__handle, self.__feature)
-        StatusProcessor.process(status, "CommandFeature", "send_command")
+        check_return_status(status, "CommandFeature", "send_command")

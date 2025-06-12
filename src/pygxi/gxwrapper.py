@@ -9,14 +9,11 @@ import sys
 NODE_FEATURE_RESERVED_16 = 16
 
 if sys.platform == "linux2" or sys.platform == "linux":
-    from ctypes import CDLL
-
     try:
-        dll = CDLL("/usr/lib/libgxiapi.so")
+        dll = ct.CDLL("/usr/lib/libgxiapi.so")
     except OSError:
         print("Cannot find libgxiapi.so.")
 else:
-    from ctypes import WinDLL
 
     try:
         env_dist = os.environ
@@ -37,9 +34,9 @@ else:
             os.add_dll_directory(GxiApi_AddPath32)
             os.add_dll_directory(GxiApi_AddPath64)
 
-            dll = WinDLL("GxIAPI.dll", winmode=0)
+            dll = ct.WinDLL("GxIAPI.dll", winmode=0)
         else:
-            dll = WinDLL("GxIAPI.dll")
+            dll = ct.WinDLL("GxIAPI.dll")
     except OSError:
         print("Cannot find GxIAPI.dll.")
 

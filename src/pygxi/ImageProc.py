@@ -8,7 +8,7 @@ import numpy as np
 
 import pygxi.dxwrapper as dx
 
-from .Exception import InvalidParameter, ParameterTypeError, UnexpectedError
+from .Exception import InvalidParameterError, ParameterTypeError, UnexpectedError
 from .gxidef import (
     CONTRAST_MAX,
     CONTRAST_MIN,
@@ -920,7 +920,7 @@ class RawImage:
         :return     RAWImage object
         """
         if self.frame_data.pixel_format & PIXEL_BIT_MASK != GX_PIXEL_8BIT:
-            raise InvalidParameter("RawImage.raw8_rotate_90_cw only support 8bit image")
+            raise InvalidParameterError("RawImage.raw8_rotate_90_cw only support 8bit image")
 
         frame_data = GxFrameData()
         frame_data.status = self.frame_data.status
@@ -963,7 +963,7 @@ class RawImage:
         :return     RAWImage object
         """
         if self.frame_data.pixel_format & PIXEL_BIT_MASK != GX_PIXEL_8BIT:
-            raise InvalidParameter(
+            raise InvalidParameterError(
                 "RawImage.raw8_rotate_90_ccw only support 8bit image"
             )
 
@@ -1015,7 +1015,7 @@ class RawImage:
             )
 
         if self.frame_data.pixel_format != GxPixelFormatEntry.MONO8:
-            raise InvalidParameter("RawImage.brightness only support mono8 image")
+            raise InvalidParameterError("RawImage.brightness only support mono8 image")
 
         status = dx.dx_brightness(
             self.frame_data.image_buf,
@@ -1041,7 +1041,7 @@ class RawImage:
             )
 
         if self.frame_data.pixel_format != GxPixelFormatEntry.MONO8:
-            raise InvalidParameter("RawImage.contrast only support mono8 image")
+            raise InvalidParameterError("RawImage.contrast only support mono8 image")
 
         status = dx.dx_contrast(
             self.frame_data.image_buf,
@@ -1068,7 +1068,7 @@ class RawImage:
             )
 
         if self.frame_data.pixel_format & PIXEL_BIT_MASK != GX_PIXEL_8BIT:
-            raise InvalidParameter("RawImage.mirror only support raw8 or mono8")
+            raise InvalidParameterError("RawImage.mirror only support raw8 or mono8")
 
         frame_data = GxFrameData()
         frame_data.status = self.frame_data.status
@@ -1204,7 +1204,7 @@ class RawImage:
             GxPixelSizeEntry.BPP10,
             GxPixelSizeEntry.BPP12,
         ):
-            raise InvalidParameter(
+            raise InvalidParameterError(
                 "Utility.get_ffc_coefficients only support raw8, raw10, raw12"
             )
 
@@ -1224,7 +1224,7 @@ class RawImage:
                 or self.frame_data.height != dark_img.get_height()
                 or self.frame_data.pixel_format != dark_img.get_pixel_format()
             ):
-                raise InvalidParameter(
+                raise InvalidParameterError(
                     "Utility.get_ffc_coefficients, the width/height/format of raw image and dark "
                     "image is different"
                 )
@@ -1259,7 +1259,7 @@ class RawImage:
             GxPixelSizeEntry.BPP10,
             GxPixelSizeEntry.BPP12,
         ):
-            raise InvalidParameter(
+            raise InvalidParameterError(
                 "Utility.get_ffc_coefficients only support raw8, raw10, raw12"
             )
         _InterUtility.check_type(
@@ -1562,7 +1562,7 @@ class Utility:
             "calc_user_set_cc_param",
         )
         if len(color_transform_factor) != COLOR_TRANSFORM_MATRIX_SIZE:
-            raise InvalidParameter(
+            raise InvalidParameterError(
                 "Utility.calc_user_set_cc_param  "
                 "color_transform_factor should be list or tuple, length = 9"
             )

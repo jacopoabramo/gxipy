@@ -4,7 +4,7 @@
 
 import pygxi.dxwrapper as dx
 
-from .Exception import InvalidParameter, ParameterTypeError, UnexpectedError
+from .Exception import InvalidParameterError, ParameterTypeError, UnexpectedError
 from .gxidef import DxBayerConvertType, DxValidBit, GxPixelFormatEntry
 from .ImageProc import RawImage
 
@@ -104,7 +104,7 @@ class ImageFormatConvert:
 
         self.__check_handle()
         if alpha_value < 0 or alpha_value > 255:
-            raise InvalidParameter("DX_PARAMETER_OUT_OF_BOUND")
+            raise InvalidParameterError("DX_PARAMETER_OUT_OF_BOUND")
 
         status = dx.dx_image_format_convert_set_alpha_value(
             self.image_convert_handle, alpha_value

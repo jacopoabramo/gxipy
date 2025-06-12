@@ -8,11 +8,11 @@ import types
 import pygxi.Feature as feat
 import pygxi.gxwrapper as gx
 
-from .Exception import InvalidCall, ParameterTypeError
+from .Exception import InvalidCallError, ParameterTypeError
 from .FeatureControl import FeatureControl
 from .gxidef import UNSIGNED_INT_MAX, UNSIGNED_LONG_LONG_MAX
 from .ImageProc import RawImage
-from .StatusProcessor import StatusProcessor
+from .status import check_return_status
 
 
 class DataStream:
@@ -64,7 +64,7 @@ class DataStream:
         :return:    Payload size
         """
         status, stream_payload_size = gx.gx_get_payload_size(self.__data_stream_handle)
-        StatusProcessor.process(status, "DataStreamHandle", "get_payload_size")
+        check_return_status(status, "DataStreamHandle", "get_payload_size")
         return stream_payload_size
 
     def get_image(self, timeout=1000):
@@ -102,7 +102,7 @@ class DataStream:
         elif status == gx.GxStatusList.TIMEOUT:
             return None
         else:
-            StatusProcessor.process(status, "DataStream", "get_image")
+            check_return_status(status, "DataStream", "get_image")
             return None
 
     def dq_buf(self, timeout=1000):
@@ -121,7 +121,7 @@ class DataStream:
             return None
 
         if not self.__py_capture_callback:
-            raise InvalidCall("Can't call DQBuf after register capture callback")
+            raise InvalidCallError("Can't call DQBuf after register capture callback")
 
         if not self.acquisition_flag:
             print("DataStream.get_image: Current data steam don't  start acquisition")
@@ -150,7 +150,7 @@ class DataStream:
         elif status == gx.GxStatusList.TIMEOUT:
             return None
         else:
-            StatusProcessor.process(status, "DataStream", "dq_buf")
+            check_return_status(status, "DataStream", "dq_buf")
             return None
 
     def q_buf(self, image):
@@ -165,7 +165,7 @@ class DataStream:
             return
 
         if not self.__py_capture_callback:
-            raise InvalidCall("Can't call DQBuf after register capture callback")
+            raise InvalidCallError("Can't call DQBuf after register capture callback")
 
         ptr_frame_buffer = ctypes.POINTER(gx.GxFrameBuffer)()
         try:
@@ -175,12 +175,12 @@ class DataStream:
             return
 
         status = gx.gx_q_buf(self.__dev_handle, ptr_frame_buffer)
-        StatusProcessor.process(status, "DataStream", "q_buf")
+        check_return_status(status, "DataStream", "q_buf")
         self.__frame_buf_map.pop(image.frame_data.buf_id)
 
     def flush_queue(self):
         status = gx.gx_flush_queue(self.__dev_handle)
-        StatusProcessor.process(status, "DataStream", "flush_queue")
+        check_return_status(status, "DataStream", "flush_queue")
 
     # old call mode,Not recommended
     def set_payload_size(self, payload_size):
@@ -209,7 +209,7 @@ class DataStream:
             return
 
         status = gx.gx_set_acquisition_buffer_number(self.__dev_handle, buf_num)
-        StatusProcessor.process(status, "DataStream", "set_acquisition_buffer_number")
+        check_return_status(status, "DataStream", "set_acquisition_buffer_number")
 
     def register_capture_callback(self, callback_func):
         """
@@ -226,7 +226,7 @@ class DataStream:
         status = gx.gx_register_capture_callback(
             self.__dev_handle, self.__c_capture_callback
         )
-        StatusProcessor.process(status, "DataStream", "register_capture_callback")
+        check_return_status(status, "DataStream", "register_capture_callback")
 
         # callback will not recorded when register callback failed.
         self.__py_capture_callback = callback_func
@@ -237,7 +237,7 @@ class DataStream:
         :return:    none
         """
         status = gx.gx_unregister_capture_callback(self.__dev_handle)
-        StatusProcessor.process(status, "DataStream", "unregister_capture_callback")
+        check_return_status(status, "DataStream", "unregister_capture_callback")
         self.__py_capture_callback = None
 
     def __on_capture_callback(self, capture_data):
