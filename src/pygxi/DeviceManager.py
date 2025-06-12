@@ -733,7 +733,7 @@ class DeviceManager:
 
         # open device by ip
         open_param = gx.GxOpenParam()
-        open_param.content = mac.encode()
+        open_param.content = mac.encode('utf-8')
         open_param.open_mode = gx.GxOpenMode.MAC
         open_param.access_mode = access_mode
         status, handle = gx.gx_open_device(open_param)
