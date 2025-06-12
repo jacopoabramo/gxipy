@@ -6,7 +6,7 @@ import ctypes as ct
 
 import numpy as np
 
-import gxipy.dxwrapper as dx
+import pygxi.dxwrapper as dx
 
 from .Exception import InvalidParameter, ParameterTypeError, UnexpectedError
 from .gxidef import (

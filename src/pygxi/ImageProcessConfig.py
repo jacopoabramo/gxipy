@@ -4,7 +4,7 @@
 
 import threading
 
-import gxipy.dxwrapper as dx
+import pygxi.dxwrapper as dx
 
 from .Exception import ParameterTypeError, UnexpectedError
 from .gxidef import DxBayerConvertType, DxValidBit

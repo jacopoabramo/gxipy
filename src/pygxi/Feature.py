@@ -4,8 +4,8 @@
 
 # 以下已废弃，请使用上面的类型
 
-from gxipy.ImageProc import Buffer
-from gxipy.StatusProcessor import StatusProcessor
+from pygxi.ImageProc import Buffer
+from pygxi.StatusProcessor import StatusProcessor
 
 from .Exception import InvalidAccess, NoImplemented, OutOfRange, ParameterTypeError
 from .gxwrapper import (

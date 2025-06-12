@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
-import gxipy.dxwrapper as dx
+import pygxi.dxwrapper as dx
 
 from .Exception import InvalidParameter, ParameterTypeError, UnexpectedError
 from .gxidef import DxBayerConvertType, DxValidBit, GxPixelFormatEntry

@@ -1,5 +1,5 @@
 import pytest
-from src.gxipy import DeviceManager
+from src.pygxi import DeviceManager
 
 
 @pytest.fixture(scope="session")

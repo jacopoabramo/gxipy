@@ -2,8 +2,8 @@
 # -*- coding:utf-8 -*-
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
-import gxipy.Feature_s as fs
-import gxipy.gxwrapper as gx
+import pygxi.Feature_s as fs
+import pygxi.gxwrapper as gx
 
 from .Exception import ParameterTypeError, UnexpectedError
 from .StatusProcessor import StatusProcessor

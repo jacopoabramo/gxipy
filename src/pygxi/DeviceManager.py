@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 # -*-mode:python ; tab-width:4 -*- ex:set tabstop=4 shiftwidth=4 expandtab: -*-
 
-import gxipy.gxwrapper as gx
+import pygxi.gxwrapper as gx
 
 from .Device import Device, GEVDevice, U2Device, U3VDevice
 from .Exception import InvalidParameter, NotFoundDevice, ParameterTypeError

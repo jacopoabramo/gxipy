@@ -6,10 +6,10 @@
 import ctypes as ct
 import os
 
-import gxipy
-import gxipy.dxwrapper as dx
-from gxipy.Exception import ParameterTypeError, UnexpectedError
-from gxipy.gxidef import (
+import pygxi
+import pygxi.dxwrapper as dx
+from pygxi.Exception import ParameterTypeError, UnexpectedError
+from pygxi.gxidef import (
     GX_PIXEL_8BIT,
     PIXEL_BIT_MASK,
     PIXEL_MONO,
@@ -18,7 +18,7 @@ from gxipy.gxidef import (
     GxImageInfo,
     GxPixelFormatEntry,
 )
-from gxipy.ImageProc import Utility
+from pygxi.ImageProc import Utility
 
 from .ImageProc import RawImage, RGBImage
 from .ImageProcessConfig import ImageProcessConfig
@@ -632,9 +632,9 @@ class ImageProcess:
         pixel_bit = self.__get_pixel_bit(pixel_format)
         if pixel_format & PIXEL_MONO:
             if pixel_bit in (
-                gxipy.GX_PIXEL_10BIT,
-                gxipy.GX_PIXEL_12BIT,
-                gxipy.GX_PIXEL_14BIT,
+                pygxi.GX_PIXEL_10BIT,
+                pygxi.GX_PIXEL_12BIT,
+                pygxi.GX_PIXEL_14BIT,
             ):
                 return True
 

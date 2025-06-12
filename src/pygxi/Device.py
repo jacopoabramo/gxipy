@@ -4,8 +4,8 @@
 
 import types
 
-import gxipy.Feature as feat
-import gxipy.gxwrapper as gx
+import pygxi.Feature as feat
+import pygxi.gxwrapper as gx
 
 from .DataStream import DataStream
 from .Exception import NotFoundDevice, ParameterTypeError, UnexpectedError
