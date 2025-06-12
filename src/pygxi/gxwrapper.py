@@ -1151,14 +1151,21 @@ if hasattr(dll, "GXCloseLib"):
 
 if hasattr(dll, "GXGetLastError"):
 
-    def gx_get_last_error(size=1024):
-        """
-        :brief      To get the latest error descriptions information of the program
-        :param      size:           string buff length(size=1024)
-                                    Type: Int, Minnum: 0
-        :return:    status:         State return value, See detail in GxStatusList
-                    err_code:       Return the last error code
-                    err_content:    the latest error descriptions information of the program
+    def gx_get_last_error(size: int =1024) -> tuple[GxStatusList, int, str]:
+        """Get the last error code and description.
+
+        Parameters
+        ----------
+        size : int
+            The size of the error content buffer. Default is 1024 bytes.
+
+        Returns
+        -------
+        tuple[GxStatusList, int, str]
+            A tuple containing the status code, error code, and error description.
+            - status: The status of the operation, see GxStatusList.
+            - err_code: The error code.
+            - err_content: The error description as a string.
         """
         err_code = ct.c_int()
         err_content_buff = ct.create_string_buffer(size)

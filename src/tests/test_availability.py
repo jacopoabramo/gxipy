@@ -1,9 +1,10 @@
 import pytest
 
+from pygxi import DeviceManager
 
 def test_device_manager_import():
     """Test that the DeviceManager can be imported successfully."""
-    from src.pygxi import DeviceManager
+    
     assert DeviceManager is not None
 
 

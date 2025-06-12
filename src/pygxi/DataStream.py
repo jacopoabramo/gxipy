@@ -4,6 +4,7 @@
 
 import ctypes
 import types
+from typing import Any
 
 import pygxi.Feature as feat
 import pygxi.gxwrapper as gx
@@ -16,7 +17,7 @@ from .status import check_return_status
 
 
 class DataStream:
-    def __init__(self, dev_handle, stream_handle):
+    def __init__(self, dev_handle, stream_handle) -> None:
         """
         :brief  Constructor for instance initialization
         :param dev_handle:      Device handle
@@ -49,16 +50,16 @@ class DataStream:
         self.acquisition_flag = False
         self.__data_stream_handle = stream_handle
         self.__stream_feature_control = FeatureControl(stream_handle)
-        self.__frame_buf_map = {}
+        self.__frame_buf_map: dict[int, Any] = {}
 
-    def get_feature_control(self):
+    def get_feature_control(self) -> FeatureControl:
         """
         :brief      Get device stream feature control object
         :return:    Device stream feature control object
         """
         return self.__stream_feature_control
 
-    def get_payload_size(self):
+    def get_payload_size(self) -> int:
         """
         :brief      Get device stream payload size
         :return:    Payload size
@@ -182,11 +183,7 @@ class DataStream:
         status = gx.gx_flush_queue(self.__dev_handle)
         check_return_status(status, "DataStream", "flush_queue")
 
-    # old call mode,Not recommended
-    def set_payload_size(self, payload_size):
-        self.payload_size = payload_size
-
-    def set_acquisition_flag(self, flag):
+    def set_acquisition_flag(self, flag: bool) -> None:
         self.acquisition_flag = flag
 
     def set_acquisition_buffer_number(self, buf_num):
@@ -254,7 +251,6 @@ class DataStream:
         frame_data.frame_id = capture_data.contents.frame_id
         frame_data.timestamp = capture_data.contents.timestamp
         frame_data.status = capture_data.contents.status
-        # frame_data.buf_id = capture_data.contents.buf_id
         image = RawImage(frame_data)
         self.__py_capture_callback(image)
 
