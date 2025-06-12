@@ -17,7 +17,7 @@ class FeatureControl:
         """
         self.__handle = handle
 
-    def is_implemented(self, feature_name):
+    def is_implemented(self, feature_name: str) -> bool:
         """
         :brief      Get feature node is implemented
         :param feature_name: Feature node name
@@ -26,7 +26,7 @@ class FeatureControl:
         if not isinstance(feature_name, str):
             raise ParameterTypeError(
                 "FeatureControl.is_implemented: "
-                "Expected feature_name type is int, not %s" % type(feature_name)
+                "Expected feature_name type is str, not %s" % type(feature_name)
             )
 
         status, node_access = gx.gx_get_node_access_mode(self.__handle, feature_name)
@@ -38,7 +38,7 @@ class FeatureControl:
         else:
             return True
 
-    def is_readable(self, feature_name):
+    def is_readable(self, feature_name: str) -> bool:
         """
         brief:  Determining whether the feature is readable
         return: is_readable
@@ -58,7 +58,7 @@ class FeatureControl:
         else:
             return False
 
-    def is_writable(self, feature_name):
+    def is_writable(self, feature_name: str) -> bool:
         """
         brief:  Determining whether the feature is writable
         return: is_writable
@@ -78,7 +78,7 @@ class FeatureControl:
         else:
             return False
 
-    def get_int_feature(self, feature_name):
+    def get_int_feature(self, feature_name: str) -> fs.IntFeature_s:
         """
         :brief      Get int type feature object
         :param feature_name:    Feature node name
@@ -99,7 +99,7 @@ class FeatureControl:
         int_feature = fs.IntFeature_s(self.__handle, feature_name)
         return int_feature
 
-    def get_enum_feature(self, feature_name):
+    def get_enum_feature(self, feature_name) -> fs.EnumFeature_s:
         """
         :brief      Get enum type feature object
         :param feature_name: Feature node name
@@ -120,7 +120,7 @@ class FeatureControl:
         enum_feature = fs.EnumFeature_s(self.__handle, feature_name)
         return enum_feature
 
-    def get_float_feature(self, feature_name):
+    def get_float_feature(self, feature_name: str) -> fs.FloatFeature_s:
         """
         :brief      Get float type feature object
         :param feature_name: Feature node name
@@ -141,7 +141,7 @@ class FeatureControl:
         float_feature = fs.FloatFeature_s(self.__handle, feature_name)
         return float_feature
 
-    def get_bool_feature(self, feature_name):
+    def get_bool_feature(self, feature_name: str) -> fs.BoolFeature_s:
         """
         :brief      Get bool type feature object
         :param feature_name: Feature node name
@@ -159,10 +159,10 @@ class FeatureControl:
                 "The feature '%s' is not implemented" % feature_name
             )
 
-        bool_feature = gx.BoolFeature_s(self.__handle, feature_name)
+        bool_feature = fs.BoolFeature_s(self.__handle, feature_name)
         return bool_feature
 
-    def get_string_feature(self, feature_name):
+    def get_string_feature(self, feature_name: str) -> fs.StringFeature_s:
         """
         :brief      Get string type feature object
         :param feature_name: Feature node name
@@ -183,7 +183,7 @@ class FeatureControl:
         string_feature = fs.StringFeature_s(self.__handle, feature_name)
         return string_feature
 
-    def get_command_feature(self, feature_name):
+    def get_command_feature(self, feature_name: str) -> fs.CommandFeature_s:
         """
         :brief      Get command type feature object
         :param feature_name: Feature node name
@@ -204,7 +204,7 @@ class FeatureControl:
         command_feature = fs.CommandFeature_s(self.__handle, feature_name)
         return command_feature
 
-    def get_register_feature(self, feature_name):
+    def get_register_feature(self, feature_name: str) -> fs.RegisterFeature_s:
         """
         :brief      Get register type feature object
         :param feature_name: Feature node name
@@ -225,7 +225,7 @@ class FeatureControl:
         register_feature = fs.RegisterFeature_s(self.__handle, feature_name)
         return register_feature
 
-    def feature_save(self, file_path):
+    def feature_save(self, file_path: str) -> None:
         """
         :brief      Save User Parameter Group
         :param file_path: Save Parameter file path
@@ -234,7 +234,7 @@ class FeatureControl:
         status = gx.gx_feature_save(self.__handle, file_path)
         check_return_status(status, "FeatureControl", "feature_save")
 
-    def feature_load(self, file_path, verify=False):
+    def feature_load(self, file_path: str, verify: bool = False) -> None:
         """
         :brief      Load User Parameter Group
         :param file_path: Load Parameter file path
@@ -243,7 +243,7 @@ class FeatureControl:
         status = gx.gx_feature_load(self.__handle, file_path, verify)
         check_return_status(status, "FeatureControl", "feature_load")
 
-    def read_port(self, address, size):
+    def read_port(self, address: int, size: int) -> int:
         """
         :brief      Read register
         :param      address:    The address of the register to be read.(type: int)
@@ -264,7 +264,7 @@ class FeatureControl:
         check_return_status(status, "FeatureControl", "read_port")
         return buff_value
 
-    def write_port(self, address, buff, size):
+    def write_port(self, address: int, buff: int, size: int) -> None:
         """
         :brief      Write register
         :param      address:    The address of the register to be written.(type: int)
