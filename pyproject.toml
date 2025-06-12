@@ -38,6 +38,3 @@ packages = ["src/gxipy"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
-markers = [
-    "device_required: marks tests that require a physical camera device (deselect with '-m \"not device_required\"')"
-]
