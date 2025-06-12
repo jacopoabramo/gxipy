@@ -9,7 +9,7 @@ from typing import Any
 import pygxi.Feature as feat
 import pygxi.gxwrapper as gx
 
-from .Exception import InvalidCallError, ParameterTypeError
+from .errors import InvalidCallError, ParameterTypeError
 from .FeatureControl import FeatureControl
 from .gxidef import UNSIGNED_INT_MAX, UNSIGNED_LONG_LONG_MAX
 from .ImageProc import RawImage

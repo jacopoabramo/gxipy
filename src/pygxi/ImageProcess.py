@@ -8,7 +8,7 @@ import os
 
 import pygxi
 import pygxi.dxwrapper as dx
-from pygxi.Exception import ParameterTypeError, UnexpectedError
+from pygxi.errors import ParameterTypeError, UnexpectedError
 from pygxi.gxidef import (
     GX_PIXEL_8BIT,
     PIXEL_BIT_MASK,

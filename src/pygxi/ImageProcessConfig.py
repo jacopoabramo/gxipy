@@ -6,7 +6,7 @@ import threading
 
 import pygxi.dxwrapper as dx
 
-from .Exception import ParameterTypeError, UnexpectedError
+from .errors import ParameterTypeError, UnexpectedError
 from .gxidef import DxBayerConvertType, DxValidBit
 from .ImageProc import Buffer, DxColorImgProcess, DxMonoImgProcess
 

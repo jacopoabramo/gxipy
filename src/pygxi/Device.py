@@ -8,7 +8,7 @@ import pygxi.Feature as feat
 import pygxi.gxwrapper as gx
 
 from .DataStream import DataStream
-from .Exception import DeviceNotFoundError, ParameterTypeError, UnexpectedError
+from .errors import DeviceNotFoundError, ParameterTypeError, UnexpectedError
 from .FeatureControl import FeatureControl
 from .gxidef import UNSIGNED_INT_MAX
 from .ImageProcessConfig import ImageProcessConfig

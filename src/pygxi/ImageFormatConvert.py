@@ -4,7 +4,7 @@
 
 import pygxi.dxwrapper as dx
 
-from .Exception import InvalidParameterError, ParameterTypeError, UnexpectedError
+from .errors import InvalidParameterError, ParameterTypeError, UnexpectedError
 from .gxidef import DxBayerConvertType, DxValidBit, GxPixelFormatEntry
 from .ImageProc import RawImage
 

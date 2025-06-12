@@ -4,7 +4,7 @@
 
 import pygxi.gxwrapper as gx
 
-from .Exception import ParameterTypeError, UnexpectedError
+from .errors import ParameterTypeError, UnexpectedError
 from .ImageProc import Buffer
 from .status import check_return_status
 

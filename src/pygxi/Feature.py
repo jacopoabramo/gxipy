@@ -8,7 +8,7 @@ import pygxi.gxwrapper as gx
 
 from pygxi.ImageProc import Buffer
 from pygxi.status import check_return_status
-from .Exception import InvalidAccessError, OutOfRangeError, ParameterTypeError
+from .errors import InvalidAccessError, OutOfRangeError, ParameterTypeError
 
 
 class Feature:

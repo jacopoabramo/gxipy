@@ -5,7 +5,7 @@
 import pygxi.Feature_s as fs
 import pygxi.gxwrapper as gx
 
-from .Exception import ParameterTypeError, UnexpectedError
+from .errors import ParameterTypeError, UnexpectedError
 from .status import check_return_status
 
 

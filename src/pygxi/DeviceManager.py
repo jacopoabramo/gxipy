@@ -6,7 +6,7 @@ import pygxi.gxwrapper as gx
 from typing import Any
 
 from .Device import Device, GEVDevice, U2Device, U3VDevice
-from .Exception import InvalidParameterError, DeviceNotFoundError, ParameterTypeError
+from .errors import InvalidParameterError, DeviceNotFoundError, ParameterTypeError
 from .gxidef import UNSIGNED_INT_MAX, GxAccessMode, GxDeviceClassList, GxTLClassList
 from .ImageFormatConvert import ImageFormatConvert
 from .ImageProcess import ImageProcess

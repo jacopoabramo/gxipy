@@ -8,7 +8,7 @@ import numpy as np
 
 import pygxi.dxwrapper as dx
 
-from .Exception import InvalidParameterError, ParameterTypeError, UnexpectedError
+from .errors import InvalidParameterError, ParameterTypeError, UnexpectedError
 from .gxidef import (
     CONTRAST_MAX,
     CONTRAST_MIN,
