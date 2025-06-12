@@ -126,7 +126,6 @@ class IntFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            # print("%s.get_range is not support" % self.feature_name)
             raise NoImplemented("%s.get_range is not support" % self.feature_name)
 
         status, int_range = gx_get_int_range(self.__handle, self.__feature)
@@ -140,7 +139,6 @@ class IntFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            # print("%s.get is not readable" % self.feature_name)
             raise InvalidAccess("%s.get is not readable" % self.feature_name)
 
         status, int_value = gx_get_int(self.__handle, self.__feature)
@@ -161,7 +159,6 @@ class IntFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            # print("%s.set: is not writeable" % self.feature_name)
             raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
 
         int_range = self.get_range()
@@ -169,7 +166,6 @@ class IntFeature(Feature):
             int_value, int_range["min"], int_range["max"], int_range["inc"]
         )
         if not check_ret:
-            # print("IntFeature.set: "
             #     "int_value out of bounds, %s.range=[%d, %d, %d]" %
             #      (self.feature_name, int_range["min"], int_range["max"], int_range["inc"]))
             raise OutOfRange(
@@ -220,7 +216,6 @@ class FloatFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            # print("%s.get_range is not support" % self.feature_name)
             raise NoImplemented("%s.get_range is not support" % self.feature_name)
 
         status, float_range = gx_get_float_range(self.__handle, self.__feature)
@@ -234,7 +229,6 @@ class FloatFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            # print("%s.get: is not readable" % self.feature_name)
             raise InvalidAccess("%s.get: is not readable" % self.feature_name)
 
         status, float_value = gx_get_float(self.__handle, self.__feature)
@@ -255,13 +249,11 @@ class FloatFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            # print("%s.set: is not writeable" % self.feature_name)
             raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
 
         float_range = self.get_range()
         check_ret = range_check(float_value, float_range["min"], float_range["max"])
         if not check_ret:
-            # print("FloatFeature.set: float_value out of bounds, %s.range=[%f, %f]" %
             #     (self.feature_name, float_range["min"], float_range["max"]))
             raise OutOfRange(
                 "FloatFeature.set: float_value out of bounds, %s.range=[%f, %f]"
@@ -290,7 +282,6 @@ class EnumFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            # print("%s.get_range: is not support" % self.feature_name)
             raise NoImplemented("%s.get_range: is not support" % self.feature_name)
 
         status, enum_num = gx_get_enum_entry_nums(self.__handle, self.__feature)
@@ -315,7 +306,6 @@ class EnumFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            # print("%s.get: is not readable" % self.feature_name)
             raise InvalidAccess("%s.get: is not readable" % self.feature_name)
 
         status, enum_value = gx_get_enum(self.__handle, self.__feature)
@@ -339,13 +329,11 @@ class EnumFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            # print("%s.set: is not writeable" % self.feature_name)
             raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
 
         range_dict = self.get_range()
         enum_value_list = range_dict.values()
         if enum_value not in enum_value_list:
-            # print("EnumFeature.set: enum_value out of bounds, %s.range:%s" %
             #  (self.feature_name, range_dict.__str__()))
             raise OutOfRange(
                 "EnumFeature.set: enum_value out of bounds, %s.range:%s"
@@ -374,7 +362,6 @@ class BoolFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            # print("%s.get is not readable" % self.feature_name)
             raise InvalidAccess("%s.get is not readable" % self.feature_name)
 
         status, bool_value = gx_get_bool(self.__handle, self.__feature)
@@ -395,7 +382,6 @@ class BoolFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            # print("%s.set: is not writeable" % self.feature_name)
             raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
 
         status = gx_set_bool(self.__handle, self.__feature, bool_value)
@@ -419,7 +405,6 @@ class StringFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            # print("%s.get_string_max_length is not support" % self.feature_name)
             raise NoImplemented(
                 "%s.get_string_max_length is not support" % self.feature_name
             )
@@ -435,7 +420,6 @@ class StringFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            # print("%s.get is not readable" % self.feature_name)
             raise InvalidAccess("%s.get is not readable" % self.feature_name)
 
         status, strings = gx_get_string(self.__handle, self.__feature)
@@ -456,12 +440,10 @@ class StringFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            # print("%s.set: is not writeable" % self.feature_name)
             raise InvalidAccess("%s.set: is not writeable" % self.feature_name)
 
         max_length = self.get_string_max_length()
         if input_string.__len__() > max_length:
-            # print("StringFeature.set: " "input_string length out of bounds, %s.length_max:%s"                  % (self.feature_name, max_length))
             raise OutOfRange(
                 "StringFeature.set: "
                 "input_string length out of bounds, %s.length_max:%s"
@@ -490,7 +472,6 @@ class BufferFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            # print("%s.get_buffer_length is not support" % self.feature_name)
             raise NoImplemented(
                 "%s.get_buffer_length is not support" % self.feature_name
             )
@@ -507,7 +488,6 @@ class BufferFeature(Feature):
         """
         readable = self.is_readable()
         if not readable:
-            # print("%s.get_buffer is not readable" % self.feature_name)
             raise InvalidAccess("%s.get_buffer is not readable" % self.feature_name)
 
         status, buf = gx_get_buffer(self.__handle, self.__feature)
@@ -528,19 +508,16 @@ class BufferFeature(Feature):
 
         writeable = self.is_writable()
         if not writeable:
-            # print("%s.set_buffer is not writeable" % self.feature_name)
             raise InvalidAccess("%s.set_buffer is not writeable" % self.feature_name)
 
         max_length = self.get_buffer_length()
         if buf.get_length() > max_length:
-            # print("BuffFeature.set_buffer: "
             #     "buff length out of bounds, %s.length_max:%s" % (self.feature_name, max_length))
             raise OutOfRange(
                 "BuffFeature.set_buffer: "
                 "buff length out of bounds, %s.length_max:%s"
                 % (self.feature_name, max_length)
             )
-            return
 
         status = gx_set_buffer(
             self.__handle, self.__feature, buf.get_ctype_array(), buf.get_length()
@@ -565,7 +542,6 @@ class CommandFeature(Feature):
         """
         implemented = self.is_implemented()
         if not implemented:
-            # print("%s.send_command is not support" % self.feature_name)
             raise NoImplemented("%s.send_command is not support" % self.feature_name)
 
         status = gx_send_command(self.__handle, self.__feature)
